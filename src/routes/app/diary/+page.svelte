@@ -1,93 +1,116 @@
 <script>
 	import { enhance } from '$app/forms';
 	import Icon from '../../../lib/components/Icon.svelte';
-	import MacroRow from '../../../lib/components/MacroRow.svelte';
-	import Progress from '../../../lib/components/Progress.svelte';
+	import PageHeader from '../../../lib/components/PageHeader.svelte';
+	import Ring from '../../../lib/components/Ring.svelte';
 	import { MEALS, longDate, round, sumEntries } from '../../../lib/nutrition.js';
 
 	let { data, form } = $props();
 
+	// The entry that is open in the edit window (null = closed)
+	let editing = $state(null);
+
 	const user = $derived(data.user);
 	const totals = $derived(sumEntries(data.entries));
-	const left = $derived(round(user.kcal_target - totals.kcal));
+	const isToday = $derived(data.date === data.today);
 
-	const entriesOf = (meal) => data.entries.filter((e) => e.meal === meal);
-	const kcalOf = (meal) => round(sumEntries(entriesOf(meal)).kcal);
-	const addLink = (meal) => `/app/search?meal=${meal}${data.isToday ? '' : `&date=${data.date}`}`;
+	const daysAgo = $derived(Math.round((new Date(data.today) - new Date(data.date)) / 86400000));
+	const dayLabel = $derived(daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo} days ago`);
+
+	// Close the edit window after saving
+	function closeAfter() {
+		return async ({ result, update }) => {
+			await update();
+			if (result.type === 'success') editing = null;
+		};
+	}
 </script>
 
-<svelte:head><title>Diary · EatWise</title></svelte:head>
+<div class="screen diary-screen">
+	<PageHeader title="Food diary" subtitle="Track every meal, see your progress" />
 
-<div class="screen">
-	<header class="day-switch">
-		<a class="icon-button" href="?date={data.prev}" aria-label="Previous day"
-			><Icon name="back" /></a
-		>
-		<div>
-			<h1>{data.isToday ? 'Today' : longDate(data.date, { weekday: 'long' })}</h1>
-			<p>{longDate(data.date, { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-		</div>
-		{#if data.next}
-			<a class="icon-button" href="?date={data.next}" aria-label="Next day"><Icon name="next" /></a>
-		{:else}
-			<span class="icon-button disabled" aria-hidden="true"><Icon name="next" /></span>
-		{/if}
-	</header>
-
-	<div class="card summary-card">
-		<div class="summary-numbers">
-			<div><strong>{user.kcal_target.toLocaleString('en-US')}</strong><small>Goal</small></div>
-			<span>−</span>
-			<div><strong>{round(totals.kcal).toLocaleString('en-US')}</strong><small>Eaten</small></div>
-			<span>=</span>
-			<div class:negative={left < 0}>
-				<strong>{left.toLocaleString('en-US')}</strong><small>{left < 0 ? 'Over' : 'Left'}</small>
-			</div>
-		</div>
-		<Progress value={totals.kcal} max={user.kcal_target} color={left < 0 ? 'red' : 'orange'} />
-		<MacroRow label="Protein" color="blue" value={totals.protein} max={user.protein_target_g} />
-		<MacroRow label="Carbs" color="amber" value={totals.carbs} max={user.carbs_target_g} />
-		<MacroRow label="Fat" color="purple" value={totals.fat} max={user.fat_target_g} />
+	<div class="date-selector">
+		<a class="icon-button" href="/app/diary?date={data.previous}" aria-label="Previous day"><Icon name="back" /></a>
+		<a href="/app/diary">
+			<strong>{dayLabel}</strong>
+			<small>{longDate(data.date, { month: 'long', day: 'numeric', year: 'numeric' })}</small>
+		</a>
+		<a class="icon-button" class:disabled={isToday} href="/app/diary?date={data.next}" aria-label="Next day" aria-disabled={isToday}>
+			<Icon name="next" />
+		</a>
 	</div>
 
-	{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
+	<div class="card daily-totals">
+		<div>
+			<Ring value={totals.kcal} max={user.kcal_target} size={74} color="orange">
+				<strong>{round(totals.kcal)}</strong><small>kcal</small>
+			</Ring>
+			<p><strong>{Math.max(0, round(user.kcal_target - totals.kcal))}</strong><span>remaining</span></p>
+		</div>
+		<div class="totals-macros">
+			<span><i class="blue"></i> P <b>{round(totals.protein)}g</b></span>
+			<span><i class="amber"></i> C <b>{round(totals.carbs)}g</b></span>
+			<span><i class="purple"></i> F <b>{round(totals.fat)}g</b></span>
+		</div>
+	</div>
 
 	{#each MEALS as meal}
-		<section class="card diary-meal">
-			<div class="card-title">
-				<h2><span>{meal.icon}</span> {meal.label}</h2>
-				<span>{kcalOf(meal.id)} kcal</span>
+		{@const list = data.entries.filter((e) => e.meal === meal.id)}
+		<section class="diary-meal">
+			<div class="meal-heading">
+				<div>
+					<span>{meal.icon}</span>
+					<h2>{meal.label}</h2>
+					<small>{round(sumEntries(list).kcal)} kcal</small>
+				</div>
+				<a class="icon-button" href="/app/search?meal={meal.id}&date={data.date}" aria-label="Add {meal.label}"><Icon name="plus" /></a>
 			</div>
 
-			{#each entriesOf(meal.id) as entry (entry.id)}
-				<div class="food-item">
-					<span class="food-icon">{entry.icon}</span>
-					<a href="/app/food/{entry.food_id}?meal={meal.id}">
-						<strong>{entry.name}</strong>
-						<small
-							>{round(entry.quantity)} g · P {round(entry.protein)} · C {round(entry.carbs)} · F {round(
-								entry.fat
-							)}</small
-						>
-					</a>
-					<span class="food-kcal">{round(entry.kcal)}</span>
-					<form method="POST" action="?/delete" use:enhance>
-						<input type="hidden" name="id" value={entry.id} />
-						<button class="icon-button small" aria-label="Remove {entry.name}" title="Remove"
-							><Icon name="trash" size={18} /></button
-						>
-					</form>
-				</div>
+			{#each list as e (e.id)}
+				<button class="diary-entry" onclick={() => (editing = { ...e })}>
+					<span>{e.icon}</span>
+					<div>
+						<strong>{e.name}</strong>
+						<small>{e.quantity}g · P {round(e.protein)}g · C {round(e.carbs)}g · F {round(e.fat)}g</small>
+					</div>
+					<b>{round(e.kcal)}<small> kcal</small></b>
+					<Icon name="more" size={18} />
+				</button>
 			{:else}
-				<p class="muted small-text">Nothing logged yet.</p>
+				<div class="meal-empty">
+					<span>No {meal.label.toLowerCase()} logged</span>
+					<a href="/app/search?meal={meal.id}&date={data.date}">Add food</a>
+				</div>
 			{/each}
-
-			<a class="add-link" href={addLink(meal.id)}><Icon name="plus" size={18} />Add food</a>
 		</section>
 	{/each}
 
-	<div class="card water-summary">
-		<Icon name="droplet" />
-		<p><strong>{data.water}</strong> of 8 glasses of water</p>
-	</div>
+	{#if editing}
+		<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+		<div class="modal-backdrop" onclick={(e) => e.target === e.currentTarget && (editing = null)}>
+			<form class="card edit-modal" method="POST" action="?/update" use:enhance={closeAfter}>
+				<div class="modal-title">
+					<div>
+						<span>{editing.icon}</span>
+						<div><h2>{editing.name}</h2><p>Edit diary entry</p></div>
+					</div>
+					<button type="button" class="icon-button" aria-label="Close" onclick={() => (editing = null)}><Icon name="close" /></button>
+				</div>
+				<input type="hidden" name="id" value={editing.id} />
+				<label class="field">
+					<span>Quantity (g)</span>
+					<input name="quantity" type="number" min="1" step="any" required bind:value={editing.quantity} />
+				</label>
+				<label class="field">
+					<span>Move to meal</span>
+					<select name="meal" bind:value={editing.meal}>
+						{#each MEALS as meal}<option value={meal.id}>{meal.label}</option>{/each}
+					</select>
+				</label>
+				{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
+				<button class="button primary">Save changes</button>
+				<button class="button danger" formaction="?/remove" formnovalidate><Icon name="trash" /> Remove entry</button>
+			</form>
+		</div>
+	{/if}
 </div>
