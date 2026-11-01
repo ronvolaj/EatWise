@@ -1,6 +1,5 @@
 <script>
 	import './layout.css';
-	import favicon from '../lib/assets/favicon.svg';
 	import { page } from '$app/state';
 	import BottomNav from '../lib/components/BottomNav.svelte';
 	import Icon from '../lib/components/Icon.svelte';
@@ -25,7 +24,6 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
 	<title>EatWise</title>
 </svelte:head>
 
