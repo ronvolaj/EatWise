@@ -17,16 +17,18 @@ function readEnvFile() {
 
 const env = { ...readEnvFile(), ...process.env };
 
-export const pool = mysql.createPool({
-	host: env.DB_HOST ?? 'localhost',
-	port: Number(env.DB_PORT ?? 28474),
-	user: env.DB_USER ?? 'root',
+// The connection settings (also used by scripts/db-setup.js)
+export const dbConfig = {
+	host: env.DB_HOST || 'localhost',
+	port: Number(env.DB_PORT || 28474),
+	user: env.DB_USER || 'root',
 	password: env.DB_PASSWORD ?? '',
-	database: env.DB_NAME ?? 'ronvol20_eatwise',
+	database: env.DB_NAME || 'ronvol20_eatwise',
 	charset: 'utf8mb4', // needed for the food emojis
-	dateStrings: true, // dates come back as text: "2026-10-04"
-	connectionLimit: 5
-});
+	dateStrings: true // dates come back as text: "2026-10-04"
+};
+
+export const pool = mysql.createPool({ ...dbConfig, connectionLimit: 5 });
 
 // Runs one SQL statement. The "?" in the SQL are replaced by the params, safely.
 // SELECT returns a list of rows. INSERT returns an object with insertId.
