@@ -1,5 +1,11 @@
 import { requireUser } from '../../../lib/server/auth.js';
-import { isDate, listCategories, recentFoods, searchFoods, today } from '../../../lib/server/data.js';
+import {
+	isDate,
+	listCategories,
+	recentFoods,
+	searchFoods,
+	today
+} from '../../../lib/server/data.js';
 import { MEALS } from '../../../lib/nutrition.js';
 
 export async function load({ cookies, url }) {

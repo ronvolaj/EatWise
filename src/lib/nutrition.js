@@ -22,7 +22,8 @@ export function ageFrom(birth) {
 	const now = new Date();
 	let age = now.getFullYear() - b.getFullYear();
 	const hadBirthday =
-		now.getMonth() > b.getMonth() || (now.getMonth() === b.getMonth() && now.getDate() >= b.getDate());
+		now.getMonth() > b.getMonth() ||
+		(now.getMonth() === b.getMonth() && now.getDate() >= b.getDate());
 	if (!hadBirthday) age -= 1;
 	return Math.max(0, age);
 }

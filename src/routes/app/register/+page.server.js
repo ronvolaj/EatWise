@@ -9,17 +9,22 @@ export async function load({ cookies }) {
 export const actions = {
 	default: async ({ request, cookies }) => {
 		const form = await request.formData();
-		const email = String(form.get('email') ?? '').trim().toLowerCase();
+		const email = String(form.get('email') ?? '')
+			.trim()
+			.toLowerCase();
 		const username = String(form.get('username') ?? '').trim();
 		const password = String(form.get('password') ?? '');
 		const password2 = String(form.get('password2') ?? '');
 
 		// Sent back on errors so the form stays filled in (never the password)
-		const values = Object.fromEntries([...form.entries()].filter(([key]) => !key.startsWith('password')));
+		const values = Object.fromEntries(
+			[...form.entries()].filter(([key]) => !key.startsWith('password'))
+		);
 		const error = (message) => fail(400, { values, error: message });
 
 		// ----- Account -----
-		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 255) return error('Please enter a valid email.');
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 255)
+			return error('Please enter a valid email.');
 		if (!/^[A-Za-z0-9_.]{3,50}$/.test(username)) {
 			return error('Username: 3 to 50 characters, only letters, numbers, _ and .');
 		}
@@ -31,7 +36,10 @@ export const actions = {
 		const profile = parseProfile(form);
 		if (profile.error) return error(profile.error);
 
-		const result = await createUser({ email, username, passwordHash: await hashPassword(password) }, profile.values);
+		const result = await createUser(
+			{ email, username, passwordHash: await hashPassword(password) },
+			profile.values
+		);
 		if (result.error) return error(result.error);
 
 		await createSession(cookies, result.id);

@@ -55,7 +55,15 @@
 			</label>
 			<label class="field">
 				<span>Username</span>
-				<input name="username" autocomplete="username" minlength="3" maxlength="50" pattern="[A-Za-z0-9_.]+" value={old.username ?? ''} required />
+				<input
+					name="username"
+					autocomplete="username"
+					minlength="3"
+					maxlength="50"
+					pattern="[A-Za-z0-9_.]+"
+					value={old.username ?? ''}
+					required
+				/>
 			</label>
 			<label class="field">
 				<span>Password</span>
@@ -63,7 +71,13 @@
 			</label>
 			<label class="field">
 				<span>Repeat password</span>
-				<input name="password2" type="password" autocomplete="new-password" minlength="8" required />
+				<input
+					name="password2"
+					type="password"
+					autocomplete="new-password"
+					minlength="8"
+					required
+				/>
 			</label>
 		</div>
 
@@ -72,8 +86,12 @@
 			<div class="field">
 				<span>Sex</span>
 				<div class="choice-row">
-					<label class="choice"><input type="radio" name="sex" value="female" bind:group={sex} />Female</label>
-					<label class="choice"><input type="radio" name="sex" value="male" bind:group={sex} />Male</label>
+					<label class="choice"
+						><input type="radio" name="sex" value="female" bind:group={sex} />Female</label
+					>
+					<label class="choice"
+						><input type="radio" name="sex" value="male" bind:group={sex} />Male</label
+					>
 				</div>
 			</div>
 			<label class="field">
@@ -83,11 +101,29 @@
 			<div class="field-row">
 				<label class="field">
 					<span>Height (cm)</span>
-					<input name="height" type="number" min="100" max="250" step="0.1" inputmode="decimal" bind:value={height} required />
+					<input
+						name="height"
+						type="number"
+						min="100"
+						max="250"
+						step="0.1"
+						inputmode="decimal"
+						bind:value={height}
+						required
+					/>
 				</label>
 				<label class="field">
 					<span>Weight (kg)</span>
-					<input name="weight" type="number" min="30" max="300" step="0.1" inputmode="decimal" bind:value={weight} required />
+					<input
+						name="weight"
+						type="number"
+						min="30"
+						max="300"
+						step="0.1"
+						inputmode="decimal"
+						bind:value={weight}
+						required
+					/>
 				</label>
 			</div>
 		</div>
@@ -98,19 +134,32 @@
 				<span>Goal</span>
 				<div class="choice-row">
 					{#each Object.entries(GOALS) as [id, label]}
-						<label class="choice"><input type="radio" name="goal" value={id} bind:group={goal} />{label}</label>
+						<label class="choice"
+							><input type="radio" name="goal" value={id} bind:group={goal} />{label}</label
+						>
 					{/each}
 				</div>
 			</div>
 			<label class="field">
 				<span>Target weight (kg)</span>
-				<input name="target_weight" type="number" min="30" max="300" step="0.1" inputmode="decimal" bind:value={target} required />
+				<input
+					name="target_weight"
+					type="number"
+					min="30"
+					max="300"
+					step="0.1"
+					inputmode="decimal"
+					bind:value={target}
+					required
+				/>
 			</label>
 			<div class="field">
 				<span>How active are you?</span>
 				<div class="choice-row">
 					{#each Object.entries(ACTIVITIES) as [id, label]}
-						<label class="choice"><input type="radio" name="activity" value={id} bind:group={activity} />{label}</label>
+						<label class="choice"
+							><input type="radio" name="activity" value={id} bind:group={activity} />{label}</label
+						>
 					{/each}
 				</div>
 			</div>
@@ -121,13 +170,17 @@
 				<span class="eyebrow">YOUR DAILY GOAL</span>
 				<h2>{plan.kcal.toLocaleString('en-US')} <small>kcal</small></h2>
 				<p>{plan.protein}g protein · {plan.carbs}g carbs · {plan.fat}g fat</p>
-				{#if plan.age < 18}<p class="muted">Under 18: your goal is set to keep your weight healthy, without a diet.</p>{/if}
+				{#if plan.age < 18}<p class="muted">
+						Under 18: your goal is set to keep your weight healthy, without a diet.
+					</p>{/if}
 			</div>
 		{/if}
 
 		{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
 
-		<button class="button primary" disabled={loading}>{loading ? 'Creating account...' : 'Create account'}</button>
+		<button class="button primary" disabled={loading}
+			>{loading ? 'Creating account...' : 'Create account'}</button
+		>
 	</form>
 
 	<p class="auth-switch">Already have an account? <a href="/app/login">Log in</a></p>

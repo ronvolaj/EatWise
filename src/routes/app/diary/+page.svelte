@@ -20,7 +20,9 @@
 
 <div class="screen">
 	<header class="day-switch">
-		<a class="icon-button" href="?date={data.prev}" aria-label="Previous day"><Icon name="back" /></a>
+		<a class="icon-button" href="?date={data.prev}" aria-label="Previous day"
+			><Icon name="back" /></a
+		>
 		<div>
 			<h1>{data.isToday ? 'Today' : longDate(data.date, { weekday: 'long' })}</h1>
 			<p>{longDate(data.date, { month: 'long', day: 'numeric', year: 'numeric' })}</p>
@@ -38,7 +40,9 @@
 			<span>−</span>
 			<div><strong>{round(totals.kcal).toLocaleString('en-US')}</strong><small>Eaten</small></div>
 			<span>=</span>
-			<div class:negative={left < 0}><strong>{left.toLocaleString('en-US')}</strong><small>{left < 0 ? 'Over' : 'Left'}</small></div>
+			<div class:negative={left < 0}>
+				<strong>{left.toLocaleString('en-US')}</strong><small>{left < 0 ? 'Over' : 'Left'}</small>
+			</div>
 		</div>
 		<Progress value={totals.kcal} max={user.kcal_target} color={left < 0 ? 'red' : 'orange'} />
 		<MacroRow label="Protein" color="blue" value={totals.protein} max={user.protein_target_g} />
@@ -60,12 +64,18 @@
 					<span class="food-icon">{entry.icon}</span>
 					<a href="/app/food/{entry.food_id}?meal={meal.id}">
 						<strong>{entry.name}</strong>
-						<small>{round(entry.quantity)} g · P {round(entry.protein)} · C {round(entry.carbs)} · F {round(entry.fat)}</small>
+						<small
+							>{round(entry.quantity)} g · P {round(entry.protein)} · C {round(entry.carbs)} · F {round(
+								entry.fat
+							)}</small
+						>
 					</a>
 					<span class="food-kcal">{round(entry.kcal)}</span>
 					<form method="POST" action="?/delete" use:enhance>
 						<input type="hidden" name="id" value={entry.id} />
-						<button class="icon-button small" aria-label="Remove {entry.name}" title="Remove"><Icon name="trash" size={18} /></button>
+						<button class="icon-button small" aria-label="Remove {entry.name}" title="Remove"
+							><Icon name="trash" size={18} /></button
+						>
 					</form>
 				</div>
 			{:else}

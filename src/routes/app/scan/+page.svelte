@@ -31,7 +31,9 @@
 		<p>Point, capture, track</p>
 		<div class="scan-switch">
 			<a href="/app/scan" class:active={data.mode === 'barcode'}><Icon name="barcode" />Barcode</a>
-			<a href="/app/scan?mode=photo" class:active={data.mode === 'photo'}><Icon name="camera" />Food Photo</a>
+			<a href="/app/scan?mode=photo" class:active={data.mode === 'photo'}
+				><Icon name="camera" />Food Photo</a
+			>
 		</div>
 	</div>
 
@@ -44,7 +46,9 @@
 					<span>?</span>
 					<h2>Product not found</h2>
 					<p>Barcode {data.notFound} isn't in our database yet.</p>
-					<a class="button primary" href="/app/custom?barcode={encodeURIComponent(data.notFound)}">Add product manually</a>
+					<a class="button primary" href="/app/custom?barcode={encodeURIComponent(data.notFound)}"
+						>Add product manually</a
+					>
 					<a class="button ghost" href="/app/scan">Try again</a>
 				</div>
 			{:else}
@@ -79,7 +83,8 @@
 				{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
 				<p class="estimate">AI values are estimates and may not be exact.</p>
 				<button class="button primary">Add to Diary</button>
-				<button type="button" class="button ghost" onclick={() => (status = 'ready')}>Retake</button>
+				<button type="button" class="button ghost" onclick={() => (status = 'ready')}>Retake</button
+				>
 			</form>
 		{/if}
 	</div>
@@ -87,14 +92,22 @@
 	{#if data.mode === 'barcode' && !data.notFound}
 		<div class="camera-controls barcode">
 			<form class="barcode-form" method="GET" action="/app/scan">
-				<input name="code" inputmode="numeric" placeholder="Barcode number" aria-label="Barcode number" required />
+				<input
+					name="code"
+					inputmode="numeric"
+					placeholder="Barcode number"
+					aria-label="Barcode number"
+					required
+				/>
 				<button class="button primary">Look up</button>
 			</form>
 			<a class="button ghost" href="/app/scan?code={data.sampleBarcode}">Simulate scan</a>
 		</div>
 	{:else if data.mode === 'photo' && status === 'ready'}
 		<div class="camera-controls">
-			<button class="upload-button" onclick={analyze}><Icon name="camera" /><small>Upload</small></button>
+			<button class="upload-button" onclick={analyze}
+				><Icon name="camera" /><small>Upload</small></button
+			>
 			<button class="shutter" aria-label="Take photo" onclick={analyze}><span></span></button>
 			<span class="upload-button"></span>
 		</div>

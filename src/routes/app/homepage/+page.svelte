@@ -16,7 +16,9 @@
 	const over = $derived(totals.kcal > user.kcal_target);
 
 	// A day is "on track" when something was logged and the goal was not exceeded by more than 10%
-	const onTrackDays = $derived(data.week.filter((d) => d.kcal > 0 && d.kcal <= user.kcal_target * 1.1).length);
+	const onTrackDays = $derived(
+		data.week.filter((d) => d.kcal > 0 && d.kcal <= user.kcal_target * 1.1).length
+	);
 	const weekMax = $derived(Math.max(user.kcal_target, ...data.week.map((d) => d.kcal)));
 
 	function mealKcal(meal) {
@@ -41,8 +43,14 @@
 			</Ring>
 		</div>
 		<div class="calorie-stats">
-			<div><span class="orange-dot"></span><p>Eaten<strong>{round(totals.kcal).toLocaleString('en-US')}</strong></p></div>
-			<div><span class="target-dot"></span><p>Daily goal<strong>{user.kcal_target.toLocaleString('en-US')}</strong></p></div>
+			<div>
+				<span class="orange-dot"></span>
+				<p>Eaten<strong>{round(totals.kcal).toLocaleString('en-US')}</strong></p>
+			</div>
+			<div>
+				<span class="target-dot"></span>
+				<p>Daily goal<strong>{user.kcal_target.toLocaleString('en-US')}</strong></p>
+			</div>
 		</div>
 	</div>
 
@@ -57,13 +65,20 @@
 	</div>
 
 	<section>
-		<div class="section-title"><h2>Meals</h2><span>{round(totals.kcal)} kcal</span></div>
+		<div class="section-title">
+			<h2>Meals</h2>
+			<span>{round(totals.kcal)} kcal</span>
+		</div>
 		<div class="meal-grid">
 			{#each MEALS as meal}
 				<div class="card meal-card">
 					<span class="meal-icon">{meal.icon}</span>
 					<div><strong>{meal.label}</strong><small>{mealKcal(meal.id)} kcal</small></div>
-					<a class="icon-button" href="/app/search?meal={meal.id}&from=home" aria-label="Add {meal.label}"><Icon name="plus" /></a>
+					<a
+						class="icon-button"
+						href="/app/search?meal={meal.id}&from=home"
+						aria-label="Add {meal.label}"><Icon name="plus" /></a
+					>
 				</div>
 			{/each}
 		</div>
@@ -79,8 +94,20 @@
 			</div>
 		</div>
 		<form class="water-actions" method="POST" action="?/water" use:enhance>
-			<button class="icon-button" name="delta" value="-1" aria-label="Remove water" disabled={data.water === 0}><Icon name="minus" /></button>
-			<button class="icon-button" name="delta" value="1" aria-label="Add water" disabled={data.water === 8}><Icon name="plus" /></button>
+			<button
+				class="icon-button"
+				name="delta"
+				value="-1"
+				aria-label="Remove water"
+				disabled={data.water === 0}><Icon name="minus" /></button
+			>
+			<button
+				class="icon-button"
+				name="delta"
+				value="1"
+				aria-label="Add water"
+				disabled={data.water === 8}><Icon name="plus" /></button
+			>
 		</form>
 	</div>
 
@@ -98,7 +125,11 @@
 		<div>
 			<span class="eyebrow">WEEKLY PROGRESS</span>
 			<h2>{onTrackDays} of 7 days on track</h2>
-			<p>{onTrackDays >= 4 ? "You're building a great routine." : 'Log your meals every day to see your progress.'}</p>
+			<p>
+				{onTrackDays >= 4
+					? "You're building a great routine."
+					: 'Log your meals every day to see your progress.'}
+			</p>
 		</div>
 		<div class="mini-bars">
 			{#each data.week as day, i}
@@ -115,7 +146,13 @@
 			<a href="/app/scan?mode=photo"><Icon name="camera" />Take photo</a>
 		</div>
 	{/if}
-	<button class="fab" class:open={quickOpen} aria-label="Add" aria-expanded={quickOpen} onclick={() => (quickOpen = !quickOpen)}>
+	<button
+		class="fab"
+		class:open={quickOpen}
+		aria-label="Add"
+		aria-expanded={quickOpen}
+		onclick={() => (quickOpen = !quickOpen)}
+	>
 		<Icon name={quickOpen ? 'close' : 'plus'} />
 	</button>
 </div>

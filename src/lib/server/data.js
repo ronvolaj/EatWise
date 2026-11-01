@@ -14,7 +14,9 @@ export function today() {
 
 // The meal that fits the current time of day
 export function mealForNow() {
-	const hour = Number(new Date().toLocaleString('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: TIME_ZONE }));
+	const hour = Number(
+		new Date().toLocaleString('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: TIME_ZONE })
+	);
 	if (hour < 11) return 'breakfast';
 	if (hour < 15) return 'lunch';
 	if (hour >= 17 && hour < 22) return 'dinner';
@@ -62,16 +64,25 @@ const VISIBLE = '(f.created_by IS NULL OR f.created_by = ?)';
 
 export async function getFood(id, userId) {
 	if (!isId(id)) return null;
-	return queryOne(`SELECT ${FOOD_COLUMNS} FROM foods f WHERE f.id = ? AND ${VISIBLE}`, [id, userId]);
+	return queryOne(`SELECT ${FOOD_COLUMNS} FROM foods f WHERE f.id = ? AND ${VISIBLE}`, [
+		id,
+		userId
+	]);
 }
 
 export async function findByBarcode(code, userId) {
-	return queryOne(`SELECT ${FOOD_COLUMNS} FROM foods f WHERE f.barcode = ? AND ${VISIBLE}`, [code, userId]);
+	return queryOne(`SELECT ${FOOD_COLUMNS} FROM foods f WHERE f.barcode = ? AND ${VISIBLE}`, [
+		code,
+		userId
+	]);
 }
 
 // Built-in food by exact name (used by the photo demo)
 export async function findByName(name) {
-	return queryOne(`SELECT ${FOOD_COLUMNS} FROM foods f WHERE f.name = ? AND f.created_by IS NULL LIMIT 1`, [name]);
+	return queryOne(
+		`SELECT ${FOOD_COLUMNS} FROM foods f WHERE f.name = ? AND f.created_by IS NULL LIMIT 1`,
+		[name]
+	);
 }
 
 // Search by name or brand. Empty search = all foods. Own foods come first.
@@ -89,7 +100,10 @@ export async function searchFoods(userId, search = '', category = '') {
 }
 
 export async function listCategories(userId) {
-	const rows = await query(`SELECT DISTINCT f.category FROM foods f WHERE ${VISIBLE} ORDER BY f.category`, [userId]);
+	const rows = await query(
+		`SELECT DISTINCT f.category FROM foods f WHERE ${VISIBLE} ORDER BY f.category`,
+		[userId]
+	);
 	return rows.map((r) => r.category);
 }
 
@@ -129,12 +143,16 @@ export function parseFood(form) {
 	if (values.brand.length > 100) return { error: 'The brand can have at most 100 characters.' };
 	if (values.category.length > 50) return { error: 'The category can have at most 50 characters.' };
 	if ([...values.icon].length > 4) return { error: 'Please use one emoji as icon.' };
-	if (values.barcode && !/^\d{8,14}$/.test(values.barcode)) return { error: 'A barcode has 8 to 14 digits.' };
-	if (!between(values.serving_size_g, 1, 2000)) return { error: 'The serving size must be between 1 and 2000 g.' };
-	if (!between(values.kcal, 0, 900)) return { error: 'Calories must be between 0 and 900 per 100 g.' };
+	if (values.barcode && !/^\d{8,14}$/.test(values.barcode))
+		return { error: 'A barcode has 8 to 14 digits.' };
+	if (!between(values.serving_size_g, 1, 2000))
+		return { error: 'The serving size must be between 1 and 2000 g.' };
+	if (!between(values.kcal, 0, 900))
+		return { error: 'Calories must be between 0 and 900 per 100 g.' };
 
 	for (const key of ['protein_g', 'carbs_g', 'fat_g', 'fiber_g', 'sugar_g']) {
-		if (!between(values[key], 0, 100)) return { error: 'Nutrient values must be between 0 and 100 g.' };
+		if (!between(values[key], 0, 100))
+			return { error: 'Nutrient values must be between 0 and 100 g.' };
 	}
 	if (values.protein_g + values.carbs_g + values.fat_g > 100) {
 		return { error: 'Protein, carbs and fat together can not be more than 100 g per 100 g.' };
@@ -151,8 +169,18 @@ export async function createFood(values, createdBy) {
 			                    kcal, protein_g, carbs_g, fat_g, fiber_g, sugar_g, created_by)
 			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			[
-				values.name, values.brand, values.icon, values.barcode, values.category, values.serving_size_g,
-				values.kcal, values.protein_g, values.carbs_g, values.fat_g, values.fiber_g, values.sugar_g,
+				values.name,
+				values.brand,
+				values.icon,
+				values.barcode,
+				values.category,
+				values.serving_size_g,
+				values.kcal,
+				values.protein_g,
+				values.carbs_g,
+				values.fat_g,
+				values.fiber_g,
+				values.sugar_g,
 				createdBy
 			]
 		);
@@ -214,7 +242,10 @@ export async function addEntry(userId, foodId, date, meal, quantity, source = 's
 
 export async function deleteEntry(userId, entryId) {
 	if (!isId(entryId)) return false;
-	const result = await query('DELETE FROM diary_entries WHERE id = ? AND user_id = ?', [entryId, userId]);
+	const result = await query('DELETE FROM diary_entries WHERE id = ? AND user_id = ?', [
+		entryId,
+		userId
+	]);
 	return result.affectedRows > 0;
 }
 
@@ -242,7 +273,10 @@ export async function dailyKcal(userId, days) {
 export const WATER_MAX = 8;
 
 export async function getWater(userId, date) {
-	const row = await queryOne('SELECT glasses FROM water_logs WHERE user_id = ? AND log_date = ?', [userId, date]);
+	const row = await queryOne('SELECT glasses FROM water_logs WHERE user_id = ? AND log_date = ?', [
+		userId,
+		date
+	]);
 	return row ? Number(row.glasses) : 0;
 }
 
@@ -305,14 +339,20 @@ export function parseProfile(form, units = 'metric') {
 	};
 
 	if (!['male', 'female'].includes(values.sex)) return { error: 'Please choose your sex.' };
-	if (!isDate(values.birth_date) || values.birth_date > today()) return { error: 'Please enter your birth date.' };
+	if (!isDate(values.birth_date) || values.birth_date > today())
+		return { error: 'Please enter your birth date.' };
 	const age = ageFrom(values.birth_date);
 	if (age < 13 || age > 120) return { error: 'You must be at least 13 years old to use EatWise.' };
-	if (!between(values.height_cm, 100, 250)) return { error: 'Height must be between 100 and 250 cm.' };
-	if (!between(values.weight_kg, 30, 300)) return { error: 'Please enter a weight between 30 and 300 kg.' };
-	if (!between(values.target_weight_kg, 30, 300)) return { error: 'Please enter a target weight between 30 and 300 kg.' };
-	if (!['lose', 'maintain', 'gain'].includes(values.goal)) return { error: 'Please choose a goal.' };
-	if (!['low', 'medium', 'high'].includes(values.activity)) return { error: 'Please choose your activity level.' };
+	if (!between(values.height_cm, 100, 250))
+		return { error: 'Height must be between 100 and 250 cm.' };
+	if (!between(values.weight_kg, 30, 300))
+		return { error: 'Please enter a weight between 30 and 300 kg.' };
+	if (!between(values.target_weight_kg, 30, 300))
+		return { error: 'Please enter a target weight between 30 and 300 kg.' };
+	if (!['lose', 'maintain', 'gain'].includes(values.goal))
+		return { error: 'Please choose a goal.' };
+	if (!['low', 'medium', 'high'].includes(values.activity))
+		return { error: 'Please choose your activity level.' };
 
 	if (values.goal === 'lose' && values.target_weight_kg >= values.weight_kg) {
 		return { error: 'To lose weight, your target must be lower than your current weight.' };
@@ -351,21 +391,33 @@ export async function createUser({ email, username, passwordHash }, profile) {
 			                       kcal_target, protein_target_g, carbs_target_g, fat_target_g)
 			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			[
-				user.insertId, profile.sex, profile.birth_date, profile.height_cm, profile.goal, profile.activity,
-				round1(profile.target_weight_kg), plan.kcal, plan.protein, plan.carbs, plan.fat
+				user.insertId,
+				profile.sex,
+				profile.birth_date,
+				profile.height_cm,
+				profile.goal,
+				profile.activity,
+				round1(profile.target_weight_kg),
+				plan.kcal,
+				plan.protein,
+				plan.carbs,
+				plan.fat
 			]
 		);
-		await connection.query('INSERT INTO weight_entries (user_id, weight_kg, logged_on) VALUES (?, ?, ?)', [
-			user.insertId,
-			round1(profile.weight_kg),
-			today()
-		]);
+		await connection.query(
+			'INSERT INTO weight_entries (user_id, weight_kg, logged_on) VALUES (?, ?, ?)',
+			[user.insertId, round1(profile.weight_kg), today()]
+		);
 		await connection.commit();
 		return { id: user.insertId };
 	} catch (err) {
 		await connection.rollback();
 		if (err.code === 'ER_DUP_ENTRY') {
-			return { error: String(err.message).includes('email') ? 'This email is already registered.' : 'This username is already taken.' };
+			return {
+				error: String(err.message).includes('email')
+					? 'This email is already registered.'
+					: 'This username is already taken.'
+			};
 		}
 		throw err;
 	} finally {
@@ -381,8 +433,17 @@ export async function updateProfile(userId, values) {
 		        kcal_target = ?, protein_target_g = ?, carbs_target_g = ?, fat_target_g = ?
 		 WHERE user_id = ?`,
 		[
-			values.sex, values.birth_date, values.height_cm, values.goal, values.activity, round1(values.target_weight_kg),
-			plan.kcal, plan.protein, plan.carbs, plan.fat, userId
+			values.sex,
+			values.birth_date,
+			values.height_cm,
+			values.goal,
+			values.activity,
+			round1(values.target_weight_kg),
+			plan.kcal,
+			plan.protein,
+			plan.carbs,
+			plan.fat,
+			userId
 		]
 	);
 	await addWeight(userId, values.weight_kg);
@@ -432,7 +493,9 @@ export async function deleteUser(userId) {
 }
 
 export async function listBuiltInFoods() {
-	return query(`SELECT ${FOOD_COLUMNS} FROM foods f WHERE f.created_by IS NULL ORDER BY f.category, f.name`);
+	return query(
+		`SELECT ${FOOD_COLUMNS} FROM foods f WHERE f.created_by IS NULL ORDER BY f.category, f.name`
+	);
 }
 
 // Admins can delete any food

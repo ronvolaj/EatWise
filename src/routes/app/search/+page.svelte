@@ -24,7 +24,10 @@
 		<span class="food-icon">{food.icon}</span>
 		<div>
 			<strong>{food.name}</strong>
-			<small>{food.brand || food.category} · {food.serving} g{#if food.created_by} · <em>My food</em>{/if}</small>
+			<small
+				>{food.brand || food.category} · {food.serving} g{#if food.created_by}
+					· <em>My food</em>{/if}</small
+			>
 		</div>
 		<span class="food-kcal">{round((food.kcal * food.serving) / 100)} <small>kcal</small></span>
 	</a>
@@ -39,7 +42,13 @@
 
 	<form class="search-bar" method="GET">
 		<Icon name="search" />
-		<input name="q" type="search" placeholder="Search food or brand" value={data.q} aria-label="Search food" />
+		<input
+			name="q"
+			type="search"
+			placeholder="Search food or brand"
+			value={data.q}
+			aria-label="Search food"
+		/>
 		{#if data.meal}<input type="hidden" name="meal" value={data.meal} />{/if}
 		{#if data.date}<input type="hidden" name="date" value={data.date} />{/if}
 		{#if data.category}<input type="hidden" name="category" value={data.category} />{/if}
@@ -48,12 +57,16 @@
 	<div class="chips">
 		<a class="chip" class:active={!data.category} href={link({ q: data.q })}>All</a>
 		{#each data.categories as category}
-			<a class="chip" class:active={data.category === category} href={link({ q: data.q, category })}>{category}</a>
+			<a class="chip" class:active={data.category === category} href={link({ q: data.q, category })}
+				>{category}</a
+			>
 		{/each}
 	</div>
 
 	<div class="quick-actions">
-		<a class="card quick-action" href="/app/scan"><Icon name="barcode" /><span>Scan barcode</span></a>
+		<a class="card quick-action" href="/app/scan"
+			><Icon name="barcode" /><span>Scan barcode</span></a
+		>
 		<a class="card quick-action" href="/app/custom"><Icon name="plus" /><span>Create food</span></a>
 	</div>
 
@@ -78,7 +91,10 @@
 		{:else}
 			<div class="card empty">
 				<p>No food found.</p>
-				<a class="button primary" href="/app/custom{data.q ? `?name=${encodeURIComponent(data.q)}` : ''}">
+				<a
+					class="button primary"
+					href="/app/custom{data.q ? `?name=${encodeURIComponent(data.q)}` : ''}"
+				>
 					{data.q ? `Create "${data.q}" yourself` : 'Create a food'}
 				</a>
 			</div>

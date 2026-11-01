@@ -32,7 +32,10 @@ export const actions = {
 		const form = await request.formData();
 		const kg = weightFromForm(form, 'weight', user.units);
 		if (!Number.isFinite(kg) || kg < 30 || kg > 300) {
-			return fail(400, { section: 'weight', error: 'Please enter a weight between 30 and 300 kg.' });
+			return fail(400, {
+				section: 'weight',
+				error: 'Please enter a weight between 30 and 300 kg.'
+			});
 		}
 		await addWeight(user.id, kg);
 		flash(cookies, 'Weight saved');

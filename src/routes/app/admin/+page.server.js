@@ -58,7 +58,8 @@ export const actions = {
 		if (food.error) return fail(400, { foodError: food.error, values: Object.fromEntries(form) });
 
 		const result = await createFood(food.values, null);
-		if (result.error) return fail(400, { foodError: result.error, values: Object.fromEntries(form) });
+		if (result.error)
+			return fail(400, { foodError: result.error, values: Object.fromEntries(form) });
 		flash(cookies, `${food.values.name} added`);
 	},
 

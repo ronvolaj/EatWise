@@ -1,6 +1,13 @@
 import { fail } from '@sveltejs/kit';
 import { flash, requireUser } from '../../../lib/server/auth.js';
-import { addDays, deleteEntry, getEntries, getWater, isDate, today } from '../../../lib/server/data.js';
+import {
+	addDays,
+	deleteEntry,
+	getEntries,
+	getWater,
+	isDate,
+	today
+} from '../../../lib/server/data.js';
 
 export async function load({ cookies, url }) {
 	const user = await requireUser(cookies);

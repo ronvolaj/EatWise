@@ -18,7 +18,11 @@
 	const amount = (value) => (value * (Number(quantity) || 0)) / 100;
 
 	const back = $derived(
-		data.from === 'scan' ? '/app/scan' : data.from === 'custom' ? '/app/search' : `/app/search?meal=${data.meal}`
+		data.from === 'scan'
+			? '/app/scan'
+			: data.from === 'custom'
+				? '/app/search'
+				: `/app/search?meal=${data.meal}`
 	);
 </script>
 
@@ -44,21 +48,55 @@
 		<div class="field">
 			<label for="quantity">Amount (grams)</label>
 			<div class="amount-row">
-				<button type="button" class="icon-button" aria-label="Less" onclick={() => (quantity = Math.max(1, (Number(quantity) || 0) - 10))}><Icon name="minus" /></button>
-				<input id="quantity" name="quantity" type="number" min="1" max="5000" step="any" inputmode="decimal" bind:value={quantity} required />
-				<button type="button" class="icon-button" aria-label="More" onclick={() => (quantity = (Number(quantity) || 0) + 10)}><Icon name="plus" /></button>
+				<button
+					type="button"
+					class="icon-button"
+					aria-label="Less"
+					onclick={() => (quantity = Math.max(1, (Number(quantity) || 0) - 10))}
+					><Icon name="minus" /></button
+				>
+				<input
+					id="quantity"
+					name="quantity"
+					type="number"
+					min="1"
+					max="5000"
+					step="any"
+					inputmode="decimal"
+					bind:value={quantity}
+					required
+				/>
+				<button
+					type="button"
+					class="icon-button"
+					aria-label="More"
+					onclick={() => (quantity = (Number(quantity) || 0) + 10)}><Icon name="plus" /></button
+				>
 			</div>
 		</div>
 		<div class="chips">
-			<button type="button" class="chip" class:active={quantity == food.serving} onclick={() => (quantity = food.serving)}>1 serving ({food.serving} g)</button>
-			<button type="button" class="chip" class:active={quantity == 100} onclick={() => (quantity = 100)}>100 g</button>
+			<button
+				type="button"
+				class="chip"
+				class:active={quantity == food.serving}
+				onclick={() => (quantity = food.serving)}>1 serving ({food.serving} g)</button
+			>
+			<button
+				type="button"
+				class="chip"
+				class:active={quantity == 100}
+				onclick={() => (quantity = 100)}>100 g</button
+			>
 		</div>
 
 		<div class="field">
 			<span>Meal</span>
 			<div class="choice-row">
 				{#each MEALS as m}
-					<label class="choice"><input type="radio" name="meal" value={m.id} bind:group={meal} />{m.icon} {m.label}</label>
+					<label class="choice"
+						><input type="radio" name="meal" value={m.id} bind:group={meal} />{m.icon}
+						{m.label}</label
+					>
 				{/each}
 			</div>
 		</div>
@@ -74,7 +112,10 @@
 	</form>
 
 	<div class="card">
-		<div class="card-title"><h2>Nutrition facts</h2><span>per 100 g</span></div>
+		<div class="card-title">
+			<h2>Nutrition facts</h2>
+			<span>per 100 g</span>
+		</div>
 		<table class="facts">
 			<tbody>
 				<tr><td>Calories</td><td>{round(food.kcal)} kcal</td></tr>
@@ -93,9 +134,16 @@
 			{#if confirmDelete}
 				<p>Delete this food? It is also removed from your diary.</p>
 				<button class="button danger">Yes, delete</button>
-				<button type="button" class="button ghost" onclick={() => (confirmDelete = false)}>Cancel</button>
+				<button type="button" class="button ghost" onclick={() => (confirmDelete = false)}
+					>Cancel</button
+				>
 			{:else}
-				<button type="button" class="button ghost danger-text" onclick={() => (confirmDelete = true)}><Icon name="trash" size={18} />Delete my food</button>
+				<button
+					type="button"
+					class="button ghost danger-text"
+					onclick={() => (confirmDelete = true)}
+					><Icon name="trash" size={18} />Delete my food</button
+				>
 			{/if}
 		</form>
 	{/if}

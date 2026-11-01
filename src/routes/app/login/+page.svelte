@@ -35,7 +35,8 @@
 
 		{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
 
-		<button class="button primary" disabled={loading}>{loading ? 'Logging in...' : 'Log in'}</button>
+		<button class="button primary" disabled={loading}>{loading ? 'Logging in...' : 'Log in'}</button
+		>
 	</form>
 
 	<p class="auth-switch">No account yet? <a href="/app/register">Create one</a></p>

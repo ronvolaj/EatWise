@@ -18,10 +18,10 @@ export const actions = {
 		}
 
 		// You can log in with your email OR your username
-		const user = await queryOne('SELECT id, username, password_hash FROM users WHERE email = ? OR username = ?', [
-			login,
-			login
-		]);
+		const user = await queryOne(
+			'SELECT id, username, password_hash FROM users WHERE email = ? OR username = ?',
+			[login, login]
+		);
 
 		// Same message for both cases, so nobody can find out which emails are registered
 		if (!user || !(await verifyPassword(password, user.password_hash))) {

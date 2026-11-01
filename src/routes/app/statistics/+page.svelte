@@ -12,15 +12,25 @@
 	const totals = $derived(sumEntries(data.entries));
 
 	// ----- Calorie bar chart -----
-	const shown = $derived(range === 'Day' ? data.days.slice(-1) : range === 'Week' ? data.days.slice(-7) : data.days);
+	const shown = $derived(
+		range === 'Day' ? data.days.slice(-1) : range === 'Week' ? data.days.slice(-7) : data.days
+	);
 	const logged = $derived(shown.filter((d) => d.kcal > 0));
-	const average = $derived(logged.length ? round(logged.reduce((sum, d) => sum + d.kcal, 0) / logged.length) : 0);
+	const average = $derived(
+		logged.length ? round(logged.reduce((sum, d) => sum + d.kcal, 0) / logged.length) : 0
+	);
 	const chartMax = $derived(Math.max(user.kcal_target * 1.15, ...shown.map((d) => d.kcal)));
 	// Bars use up to 88% of the 140px column, the label below needs 16px
 	const barHeight = (kcal) => (kcal / chartMax) * 88;
 	const goalTop = $derived(154 - barHeight(user.kcal_target) * 1.4);
 	const status = $derived(
-		!logged.length ? null : average > user.kcal_target * 1.05 ? 'Over goal' : average < user.kcal_target * 0.8 ? 'Under goal' : 'On target'
+		!logged.length
+			? null
+			: average > user.kcal_target * 1.05
+				? 'Over goal'
+				: average < user.kcal_target * 0.8
+					? 'Under goal'
+					: 'On target'
 	);
 
 	function barLabel(day, i) {
@@ -30,7 +40,11 @@
 	}
 
 	// ----- Macro donut: share of today's calories (protein and carbs 4 kcal/g, fat 9 kcal/g) -----
-	const macroKcal = $derived({ protein: totals.protein * 4, carbs: totals.carbs * 4, fat: totals.fat * 9 });
+	const macroKcal = $derived({
+		protein: totals.protein * 4,
+		carbs: totals.carbs * 4,
+		fat: totals.fat * 9
+	});
 	const macroSum = $derived(macroKcal.protein + macroKcal.carbs + macroKcal.fat);
 	const share = $derived({
 		protein: macroSum ? round((macroKcal.protein / macroSum) * 100) : 0,
@@ -77,15 +91,23 @@
 		<div class="card-title">
 			<div>
 				<span class="eyebrow">CALORIE INTAKE</span>
-				<h2>{average.toLocaleString('en-US')} <small>{range === 'Day' ? 'kcal today' : 'avg kcal'}</small></h2>
+				<h2>
+					{average.toLocaleString('en-US')}
+					<small>{range === 'Day' ? 'kcal today' : 'avg kcal'}</small>
+				</h2>
 			</div>
 			{#if status}<span class="positive" class:warn={status !== 'On target'}>{status}</span>{/if}
 		</div>
 		<div class="bar-chart" class:month={range === 'Month'}>
-			<div class="goal-line" style="top: {goalTop}px"><span>{user.kcal_target.toLocaleString('en-US')} goal</span></div>
+			<div class="goal-line" style="top: {goalTop}px">
+				<span>{user.kcal_target.toLocaleString('en-US')} goal</span>
+			</div>
 			{#each shown as day, i}
 				<div title="{shortDate(day.date)}: {round(day.kcal)} kcal">
-					<span style="height: {day.kcal > 0 ? Math.max(3, barHeight(day.kcal)) : 0}%" class:active={i === shown.length - 1}></span>
+					<span
+						style="height: {day.kcal > 0 ? Math.max(3, barHeight(day.kcal)) : 0}%"
+						class:active={i === shown.length - 1}
+					></span>
 					<small>{barLabel(day, i)}</small>
 				</div>
 			{/each}
@@ -99,7 +121,11 @@
 				<div><strong>{round(totals.kcal).toLocaleString('en-US')}</strong><small>kcal</small></div>
 			</div>
 			<div class="donut-legend">
-				<MacroBadge color="blue" label="Protein · {share.protein}%" value="{round(totals.protein)}g" />
+				<MacroBadge
+					color="blue"
+					label="Protein · {share.protein}%"
+					value="{round(totals.protein)}g"
+				/>
 				<MacroBadge color="amber" label="Carbs · {share.carbs}%" value="{round(totals.carbs)}g" />
 				<MacroBadge color="purple" label="Fat · {share.fat}%" value="{round(totals.fat)}g" />
 			</div>
@@ -107,7 +133,10 @@
 	</div>
 
 	<div class="card">
-		<div class="card-title"><h2>Goal vs actual</h2><span>Today</span></div>
+		<div class="card-title">
+			<h2>Goal vs actual</h2>
+			<span>Today</span>
+		</div>
 		<MacroRow label="Protein" color="blue" value={totals.protein} max={user.protein_target_g} />
 		<MacroRow label="Carbs" color="amber" value={totals.carbs} max={user.carbs_target_g} />
 		<MacroRow label="Fat" color="purple" value={totals.fat} max={user.fat_target_g} />
@@ -142,7 +171,9 @@
 				</div>
 			</div>
 		{:else}
-			<p class="chart-empty">Log your weight on another day to see your trend. You can do that in your profile.</p>
+			<p class="chart-empty">
+				Log your weight on another day to see your trend. You can do that in your profile.
+			</p>
 		{/if}
 	</div>
 </div>

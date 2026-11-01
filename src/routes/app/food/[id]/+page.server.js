@@ -1,6 +1,13 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { flash, requireUser } from '../../../../lib/server/auth.js';
-import { addEntry, deleteOwnFood, getFood, isDate, mealForNow, today } from '../../../../lib/server/data.js';
+import {
+	addEntry,
+	deleteOwnFood,
+	getFood,
+	isDate,
+	mealForNow,
+	today
+} from '../../../../lib/server/data.js';
 import { MEALS, mealLabel } from '../../../../lib/nutrition.js';
 
 export async function load({ cookies, params, url }) {
@@ -30,7 +37,14 @@ export const actions = {
 		const date = String(form.get('date') ?? '');
 		const source = form.get('from') === 'scan' ? 'barcode' : 'search';
 
-		const result = await addEntry(user.id, Number(params.id), date, meal, Number(form.get('quantity')), source);
+		const result = await addEntry(
+			user.id,
+			Number(params.id),
+			date,
+			meal,
+			Number(form.get('quantity')),
+			source
+		);
 		if (result.error) return fail(400, { error: result.error });
 
 		const food = await getFood(Number(params.id), user.id);

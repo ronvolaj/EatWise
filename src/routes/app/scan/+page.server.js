@@ -31,7 +31,14 @@ export const actions = {
 		const form = await request.formData();
 		const food = await findByName(PHOTO_FOOD);
 
-		const result = await addEntry(user.id, food.id, today(), 'lunch', Number(form.get('quantity')), 'photo');
+		const result = await addEntry(
+			user.id,
+			food.id,
+			today(),
+			'lunch',
+			Number(form.get('quantity')),
+			'photo'
+		);
 		if (result.error) return fail(400, { error: result.error });
 
 		flash(cookies, `${food.name} added to Lunch`);
