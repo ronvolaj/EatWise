@@ -1,15 +1,15 @@
 import { redirect } from '@sveltejs/kit';
-import { deleteSession, flash, requireUser } from '../../../lib/server/auth.js';
+import { logout } from '../../../lib/server/auth.js';
 
-export async function load({ cookies }) {
-	await requireUser(cookies);
+// The page itself shows nothing: opening it directly forwards to Home
+export async function load() {
+	redirect(303, '/app/homepage');
 }
 
+// Called by the "Log out" button (form with action="/app/logout")
 export const actions = {
-	// Logging out is a POST (a form button), so a link or preload can not log you out by accident
 	default: async ({ cookies }) => {
-		await deleteSession(cookies);
-		flash(cookies, 'You are logged out.');
+		await logout(cookies);
 		redirect(303, '/app/login');
 	}
 };
