@@ -1,43 +1,27 @@
 <script>
 	import { enhance } from '$app/forms';
-	import logo from '../../../lib/assets/logo-full.png';
+	import logoFull from '../../../lib/assets/logo-full.png';
+	import PageHeader from '../../../lib/components/PageHeader.svelte';
 
+	// form = answer from the server when something was wrong
 	let { form } = $props();
-	let loading = $state(false);
 </script>
 
-<svelte:head><title>Log in · EatWise</title></svelte:head>
+<form class="onboarding signin" method="POST" use:enhance>
+	<PageHeader title="Welcome back" subtitle="Sign in to continue your journey" back="/app/register" />
+	<div class="auth-logo"><img src={logoFull} alt="EatWise" /></div>
 
-<div class="auth-screen">
-	<img class="auth-logo" src={logo} alt="EatWise" />
-	<h1>Welcome back</h1>
-	<p class="muted">Log in to track your meals.</p>
+	<label class="field">
+		<span>Email</span>
+		<input name="email" type="email" autocomplete="email" placeholder="alex@example.com" required value={form?.email ?? ''} />
+	</label>
+	<label class="field">
+		<span>Password</span>
+		<input name="password" type="password" autocomplete="current-password" placeholder="Your password" required />
+	</label>
 
-	<form
-		class="card auth-card"
-		method="POST"
-		use:enhance={() => {
-			loading = true;
-			return async ({ update }) => {
-				await update();
-				loading = false;
-			};
-		}}
-	>
-		<label class="field">
-			<span>Email or username</span>
-			<input name="login" autocomplete="username" value={form?.login ?? ''} required />
-		</label>
-		<label class="field">
-			<span>Password</span>
-			<input name="password" type="password" autocomplete="current-password" required />
-		</label>
+	{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
 
-		{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
-
-		<button class="button primary" disabled={loading}>{loading ? 'Logging in...' : 'Log in'}</button
-		>
-	</form>
-
-	<p class="auth-switch">No account yet? <a href="/app/register">Create one</a></p>
-</div>
+	<button class="button primary">Sign In</button>
+	<a class="text-link" href="/app/register">New here? <strong>Create an account</strong></a>
+</form>
