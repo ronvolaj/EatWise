@@ -7,144 +7,82 @@
 
 	let { data, form } = $props();
 
+	const food = $derived(data.food);
 	// svelte-ignore state_referenced_locally
 	let quantity = $state(data.food.serving);
-	// svelte-ignore state_referenced_locally
-	let meal = $state(data.meal);
-	let confirmDelete = $state(false);
 
-	const food = $derived(data.food);
-	// Values in the database are per 100 g
-	const amount = (value) => (value * (Number(quantity) || 0)) / 100;
-
+	const scaled = (value) => round((value * quantity) / 100);
 	const back = $derived(
-		data.from === 'scan'
-			? '/app/scan'
-			: data.from === 'custom'
-				? '/app/search'
-				: `/app/search?meal=${data.meal}`
+		data.from === 'home' ? '/app/homepage' : data.from === 'scan' ? '/app/scan' : `/app/search?meal=${data.meal}&date=${data.date}`
 	);
+	const servings = $derived([
+		{ label: '½ serving', grams: food.serving / 2 },
+		{ label: '1 serving', grams: food.serving },
+		{ label: '1½ servings', grams: food.serving * 1.5 }
+	]);
+
+	// Ask before "Delete food" (the "Add to Diary" button needs no question)
+	function confirmDelete({ action, cancel }) {
+		if (action.search === '?/delete' && !confirm(`Delete ${food.name}? It is also removed from your diary.`)) cancel();
+	}
 </script>
 
-<svelte:head><title>{food.name} · EatWise</title></svelte:head>
+<form class="screen detail-screen" method="POST" action="?/add" use:enhance={confirmDelete}>
+	<PageHeader title="Food details" {back} />
+	<input type="hidden" name="date" value={data.date} />
+	<input type="hidden" name="from" value={data.from} />
 
-<div class="screen">
-	<PageHeader title={food.name} subtitle={food.brand || food.category} {back} />
+	<div class="food-hero">
+		<span>{food.icon}</span>
+		<h1>{food.name}</h1>
+		<p>{food.brand}</p>
+	</div>
 
-	<div class="card food-hero">
-		<span class="food-hero-icon">{food.icon}</span>
-		<strong>{round(amount(food.kcal))} <small>kcal</small></strong>
-		<p>in {Number(quantity) || 0} g</p>
-		<div class="food-macros">
-			<MacroBadge color="blue" label="Protein" value="{round(amount(food.protein))}g" />
-			<MacroBadge color="amber" label="Carbs" value="{round(amount(food.carbs))}g" />
-			<MacroBadge color="purple" label="Fat" value="{round(amount(food.fat))}g" />
+	<div class="card nutrition-hero">
+		<div><strong>{scaled(food.kcal)}</strong><span>kcal</span></div>
+		<MacroBadge color="blue" label="Protein" value="{scaled(food.protein)}g" />
+		<MacroBadge color="amber" label="Carbs" value="{scaled(food.carbs)}g" />
+		<MacroBadge color="purple" label="Fat" value="{scaled(food.fat)}g" />
+	</div>
+
+	<div class="form-section">
+		<h2>Serving</h2>
+		<div class="quantity-control">
+			<button type="button" class="icon-button" aria-label="Decrease" onclick={() => (quantity = Math.max(1, quantity - 10))}><Icon name="minus" /></button>
+			<div>
+				<input type="number" name="quantity" min="1" step="any" aria-label="Quantity in grams" bind:value={quantity} />
+				<span>grams</span>
+			</div>
+			<button type="button" class="icon-button" aria-label="Increase" onclick={() => (quantity = quantity + 10)}><Icon name="plus" /></button>
+		</div>
+		<div class="serving-chips">
+			{#each servings as s}
+				<button type="button" class:active={quantity === s.grams} onclick={() => (quantity = s.grams)}>{s.label}</button>
+			{/each}
 		</div>
 	</div>
 
-	<form class="card" method="POST" action="?/add" use:enhance>
-		<input type="hidden" name="from" value={data.from} />
-
-		<div class="field">
-			<label for="quantity">Amount (grams)</label>
-			<div class="amount-row">
-				<button
-					type="button"
-					class="icon-button"
-					aria-label="Less"
-					onclick={() => (quantity = Math.max(1, (Number(quantity) || 0) - 10))}
-					><Icon name="minus" /></button
-				>
-				<input
-					id="quantity"
-					name="quantity"
-					type="number"
-					min="1"
-					max="5000"
-					step="any"
-					inputmode="decimal"
-					bind:value={quantity}
-					required
-				/>
-				<button
-					type="button"
-					class="icon-button"
-					aria-label="More"
-					onclick={() => (quantity = (Number(quantity) || 0) + 10)}><Icon name="plus" /></button
-				>
-			</div>
-		</div>
-		<div class="chips">
-			<button
-				type="button"
-				class="chip"
-				class:active={quantity == food.serving}
-				onclick={() => (quantity = food.serving)}>1 serving ({food.serving} g)</button
-			>
-			<button
-				type="button"
-				class="chip"
-				class:active={quantity == 100}
-				onclick={() => (quantity = 100)}>100 g</button
-			>
-		</div>
-
-		<div class="field">
-			<span>Meal</span>
-			<div class="choice-row">
-				{#each MEALS as m}
-					<label class="choice"
-						><input type="radio" name="meal" value={m.id} bind:group={meal} />{m.icon}
-						{m.label}</label
-					>
-				{/each}
-			</div>
-		</div>
-
-		<label class="field">
-			<span>Day</span>
-			<input name="date" type="date" max={data.today} value={data.date} required />
-		</label>
-
-		{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
-
-		<button class="button primary">Add to Diary</button>
-	</form>
-
-	<div class="card">
-		<div class="card-title">
-			<h2>Nutrition facts</h2>
-			<span>per 100 g</span>
-		</div>
-		<table class="facts">
-			<tbody>
-				<tr><td>Calories</td><td>{round(food.kcal)} kcal</td></tr>
-				<tr><td>Protein</td><td>{food.protein} g</td></tr>
-				<tr><td>Carbs</td><td>{food.carbs} g</td></tr>
-				<tr class="sub"><td>of which sugar</td><td>{food.sugar} g</td></tr>
-				<tr><td>Fat</td><td>{food.fat} g</td></tr>
-				<tr><td>Fiber</td><td>{food.fiber} g</td></tr>
-				{#if food.barcode}<tr><td>Barcode</td><td>{food.barcode}</td></tr>{/if}
-			</tbody>
-		</table>
+	<div class="card detail-grid">
+		<div><span>Fiber</span><strong>{scaled(food.fiber)}g</strong></div>
+		<div><span>Sugar</span><strong>{scaled(food.sugar)}g</strong></div>
+		<div><span>Serving</span><strong>{quantity}g</strong></div>
+		<div><span>Per 100g</span><strong>{food.kcal} kcal</strong></div>
 	</div>
+
+	<label class="field">
+		<span>Add to meal</span>
+		<select name="meal" value={data.meal}>
+			{#each MEALS as meal}<option value={meal.id}>{meal.label}</option>{/each}
+		</select>
+	</label>
+
+	{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
+
+	<button class="button primary sticky-action" disabled={!(quantity > 0)}>
+		<Icon name="plus" /> Add to Diary · {scaled(food.kcal)} kcal
+	</button>
 
 	{#if data.isOwn}
-		<form class="danger-zone" method="POST" action="?/delete" use:enhance>
-			{#if confirmDelete}
-				<p>Delete this food? It is also removed from your diary.</p>
-				<button class="button danger">Yes, delete</button>
-				<button type="button" class="button ghost" onclick={() => (confirmDelete = false)}
-					>Cancel</button
-				>
-			{:else}
-				<button
-					type="button"
-					class="button ghost danger-text"
-					onclick={() => (confirmDelete = true)}
-					><Icon name="trash" size={18} />Delete my food</button
-				>
-			{/if}
-		</form>
+		<button class="button danger delete-food" formaction="?/delete" formnovalidate><Icon name="trash" /> Delete food</button>
 	{/if}
-</div>
+</form>
