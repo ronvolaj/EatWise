@@ -1,103 +1,93 @@
 <script>
+	import { page } from '$app/state';
 	import Icon from '../../../lib/components/Icon.svelte';
 	import PageHeader from '../../../lib/components/PageHeader.svelte';
-	import { mealLabel, round } from '../../../lib/nutrition.js';
+	import { round } from '../../../lib/nutrition.js';
 
 	let { data } = $props();
 
-	// Keeps meal and date in every link
-	function link(params) {
-		const p = new URLSearchParams();
-		if (data.meal) p.set('meal', data.meal);
-		if (data.date) p.set('date', data.date);
-		for (const [key, value] of Object.entries(params)) if (value) p.set(key, value);
-		return `?${p}`;
-	}
+	let query = $state('');
+	let category = $state('All');
 
-	const foodLink = (food) => `/app/food/${food.id}${link({})}`;
+	// Chips: "All" plus every category that exists in the database
+	const categories = $derived(['All', ...new Set(data.foods.map((f) => f.category))]);
+	const filtered = $derived(
+		data.foods.filter(
+			(f) => (category === 'All' || f.category === category) && f.name.toLowerCase().includes(query.trim().toLowerCase())
+		)
+	);
+
+	// meal, date and from are passed on to the food page (e.g. "+" on the Lunch card)
+	const extra = $derived(page.url.search);
+	const scaled = (value, quantity) => round((value * quantity) / 100);
 </script>
 
-<svelte:head><title>Search · EatWise</title></svelte:head>
-
-{#snippet foodItem(food)}
-	<a class="food-item" href={foodLink(food)}>
-		<span class="food-icon">{food.icon}</span>
+{#snippet foodRow(food)}
+	<a class="food-row" href="/app/food/{food.id}{extra}">
+		<span class="food-emoji">{food.icon}</span>
 		<div>
 			<strong>{food.name}</strong>
-			<small
-				>{food.brand || food.category} · {food.serving} g{#if food.created_by}
-					· <em>My food</em>{/if}</small
-			>
+			<small>{food.brand} · {food.serving}g serving</small>
+			<p>
+				<b>{scaled(food.protein, food.serving)}g</b> P&nbsp; <b>{scaled(food.carbs, food.serving)}g</b> C&nbsp;
+				<b>{scaled(food.fat, food.serving)}g</b> F
+			</p>
 		</div>
-		<span class="food-kcal">{round((food.kcal * food.serving) / 100)} <small>kcal</small></span>
+		<div>
+			<strong>{scaled(food.kcal, food.serving)}</strong><small>kcal</small>
+			<Icon name="plus" size={18} />
+		</div>
 	</a>
 {/snippet}
 
 <div class="screen">
-	<PageHeader
-		title="Add food"
-		subtitle={data.meal ? `to ${mealLabel(data.meal)}` : 'Search our food database'}
-		back={data.date ? `/app/diary?date=${data.date}` : '/app/homepage'}
-	/>
+	<PageHeader title="Find food" subtitle="What are you eating today?" />
 
-	<form class="search-bar" method="GET">
+	<label class="search-box">
 		<Icon name="search" />
-		<input
-			name="q"
-			type="search"
-			placeholder="Search food or brand"
-			value={data.q}
-			aria-label="Search food"
-		/>
-		{#if data.meal}<input type="hidden" name="meal" value={data.meal} />{/if}
-		{#if data.date}<input type="hidden" name="date" value={data.date} />{/if}
-		{#if data.category}<input type="hidden" name="category" value={data.category} />{/if}
-	</form>
+		<input bind:value={query} placeholder="Search {data.foods.length} foods" aria-label="Search foods" />
+		{#if query}
+			<button class="icon-button" aria-label="Clear" onclick={() => (query = '')}><Icon name="close" /></button>
+		{/if}
+	</label>
 
 	<div class="chips">
-		<a class="chip" class:active={!data.category} href={link({ q: data.q })}>All</a>
-		{#each data.categories as category}
-			<a class="chip" class:active={data.category === category} href={link({ q: data.q, category })}
-				>{category}</a
-			>
+		{#each categories as c}
+			<button class:active={category === c} onclick={() => (category = c)}>{c}</button>
 		{/each}
 	</div>
 
-	<div class="quick-actions">
-		<a class="card quick-action" href="/app/scan"
-			><Icon name="barcode" /><span>Scan barcode</span></a
-		>
-		<a class="card quick-action" href="/app/custom"><Icon name="plus" /><span>Create food</span></a>
-	</div>
-
-	{#if data.recent.length}
-		<section>
-			<div class="section-title"><h2>Recently eaten</h2></div>
-			<div class="card list-card">
-				{#each data.recent as food (food.id)}{@render foodItem(food)}{/each}
-			</div>
-		</section>
+	<!-- Recently used: only when nothing is searched and no category is chosen -->
+	{#if !query && category === 'All' && data.recent.length}
+		<div class="list-heading">
+			<h2>Recently used</h2>
+			<span>{data.recent.length} items</span>
+		</div>
+		<div class="food-list recent-list">
+			{#each data.recent as food (food.id)}
+				{@render foodRow(food)}
+			{/each}
+		</div>
 	{/if}
 
-	<section>
-		<div class="section-title">
-			<h2>{data.q ? `Results for "${data.q}"` : 'All foods'}</h2>
-			<span>{data.foods.length}</span>
+	{#if filtered.length}
+		<div class="list-heading">
+			<h2>{query ? 'Results' : 'Popular foods'}</h2>
+			<span>{filtered.length} items</span>
 		</div>
-		{#if data.foods.length}
-			<div class="card list-card">
-				{#each data.foods as food (food.id)}{@render foodItem(food)}{/each}
-			</div>
-		{:else}
-			<div class="card empty">
-				<p>No food found.</p>
-				<a
-					class="button primary"
-					href="/app/custom{data.q ? `?name=${encodeURIComponent(data.q)}` : ''}"
-				>
-					{data.q ? `Create "${data.q}" yourself` : 'Create a food'}
-				</a>
-			</div>
-		{/if}
-	</section>
+		<div class="food-list">
+			{#each filtered as food (food.id)}
+				{@render foodRow(food)}
+			{/each}
+		</div>
+	{:else}
+		<div class="empty-state">
+			<div>🔎</div>
+			<h2>Food not found</h2>
+			<p>We couldn't find “{query}”. Add it to your foods and track it anytime.</p>
+			<a class="button primary" href="/app/custom">Add Your Own Food</a>
+		</div>
+	{/if}
+
+	<a class="button secondary add-custom" href="/app/custom"><Icon name="plus" /> Add your own food</a>
 </div>
