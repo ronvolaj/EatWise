@@ -288,6 +288,15 @@ small { font-size: 12px; }
 @keyframes scanline { from { top: 15%; } to { top: 85%; } }
 .camera-view > p { position: absolute; margin-top: 225px; color: #d6ded8; font-size: 12px; }
 .photo-guide { width: 260px; height: 260px; border: 2px dashed #ffffff88; border-radius: 50%; display: grid; place-items: center; font-size: 100px; background: #ffffff12; }
+/* Live camera image + taken photo */
+.camera-feed { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.camera-feed.hidden { display: none; }
+.scan-frame, .photo-guide, .camera-view > p { z-index: 1; }
+.camera-view > p { text-shadow: 0 1px 4px #000c; padding: 0 24px; text-align: center; }
+.photo-guide.live { background: transparent; border-color: #ffffffcc; }
+.shutter:disabled { opacity: .35; }
+.upload-button input { display: none; }
+
 .camera-controls { min-height: 120px; padding: 14px 18px 96px; background: #0b0e0c; display: flex; align-items: center; justify-content: space-around; }
 .camera-controls.barcode { flex-direction: column; align-items: stretch; gap: 8px; }
 .barcode-form { display: flex; gap: 8px; }

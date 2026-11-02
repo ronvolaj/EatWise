@@ -1,28 +1,69 @@
 <script>
-	import { enhance } from '$app/forms';
 	import Icon from '../../../lib/components/Icon.svelte';
-	import { round } from '../../../lib/nutrition.js';
+	import { cameraErrorMessage, capturePhoto, openCamera } from '../../../lib/camera.js';
 
-	let { data, form } = $props();
+	let { data } = $props();
 
-	// Photo mode: ready -> analyzing -> result
+	// Photo mode: ready (live camera) -> taken (photo is shown)
 	let status = $state('ready');
-	// svelte-ignore state_referenced_locally
-	let portion = $state(data.photoFood.serving);
 
-	const food = $derived(data.photoFood);
-	const scaled = (value) => round((value * portion) / 100);
+	let video = $state(); // the <video> element with the live camera image
+	let cameraError = $state('');
+	let photoUrl = $state(''); // preview URL of the taken/uploaded photo
 
-	function analyze() {
-		status = 'analyzing';
-		setTimeout(() => (status = 'result'), 1600);
-	}
+	// The camera is on while scanning a barcode or before a photo is taken
+	const cameraOn = $derived(
+		(data.mode === 'barcode' && !data.notFound) || (data.mode === 'photo' && status === 'ready')
+	);
 
 	// Switching the mode resets the photo flow
 	$effect(() => {
 		data.mode;
 		status = 'ready';
 	});
+
+	// Starts the camera when it is needed and turns it off again afterwards
+	$effect(() => {
+		if (!cameraOn || !video) return;
+
+		let stopped = false;
+		let stopCamera = () => {};
+		cameraError = '';
+
+		openCamera(video)
+			.then((stop) => {
+				if (stopped) stop(); // page was left before the camera was ready
+				else stopCamera = stop;
+			})
+			.catch((error) => {
+				if (!stopped) cameraError = cameraErrorMessage(error);
+			});
+
+		return () => {
+			stopped = true;
+			stopCamera();
+		};
+	});
+
+	// Shutter button: take a picture of the live camera image
+	async function takePhoto() {
+		if (!video?.videoWidth) return;
+		showPhoto(await capturePhoto(video));
+	}
+
+	// Upload button: use a photo from the gallery
+	function uploadPhoto(event) {
+		const file = event.currentTarget.files?.[0];
+		event.currentTarget.value = ''; // allows choosing the same file again
+		if (file) showPhoto(file);
+	}
+
+	function showPhoto(blob) {
+		if (photoUrl) URL.revokeObjectURL(photoUrl);
+		photoUrl = URL.createObjectURL(blob);
+		status = 'taken';
+		// Later (M2): send the photo to the food recognition model here
+	}
 </script>
 
 <div class="scan-screen">
@@ -40,6 +81,16 @@
 	<div class="camera-view">
 		<div class="camera-noise"></div>
 
+		<!-- Live camera image (playsinline is needed on iPhone) -->
+		<video
+			bind:this={video}
+			class="camera-feed"
+			class:hidden={!cameraOn || cameraError}
+			playsinline
+			muted
+			autoplay
+		></video>
+
 		{#if data.mode === 'barcode'}
 			{#if data.notFound}
 				<div class="scan-result overlay-card">
@@ -53,39 +104,14 @@
 				</div>
 			{:else}
 				<div class="scan-frame"><span></span><span></span><span></span><span></span><i></i></div>
-				<p>Enter the barcode number below</p>
+				<p>{cameraError || 'Point the camera at a barcode'}</p>
 			{/if}
 		{:else if status === 'ready'}
-			<div class="photo-guide">🥗</div>
-			<p>Center your meal in the frame</p>
-		{:else if status === 'analyzing'}
-			<div class="analyzing">
-				<div class="spinner"></div>
-				<h2>Analyzing your meal...</h2>
-				<p>Identifying foods and estimating portions</p>
-			</div>
+			<div class="photo-guide" class:live={!cameraError}>{cameraError ? '🥗' : ''}</div>
+			<p>{cameraError || 'Center your meal in the frame'}</p>
 		{:else}
-			<form class="scan-result overlay-card" method="POST" action="?/photo" use:enhance>
-				<span>{food.icon}</span>
-				<div class="confidence">Demo result</div>
-				<h2>{food.name}</h2>
-				<p>Estimated portion · {portion}g</p>
-				<div class="ai-macros">
-					<strong>{scaled(food.kcal)} <small>kcal</small></strong>
-					<span>{scaled(food.protein)}g P</span>
-					<span>{scaled(food.carbs)}g C</span>
-					<span>{scaled(food.fat)}g F</span>
-				</div>
-				<label class="field">
-					<span>Portion (grams)</span>
-					<input name="quantity" type="number" min="1" step="any" required bind:value={portion} />
-				</label>
-				{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
-				<p class="estimate">AI values are estimates and may not be exact.</p>
-				<button class="button primary">Add to Diary</button>
-				<button type="button" class="button ghost" onclick={() => (status = 'ready')}>Retake</button
-				>
-			</form>
+			<!-- The photo that was taken -->
+			<img class="camera-feed" src={photoUrl} alt="Your meal" />
 		{/if}
 	</div>
 
@@ -101,15 +127,24 @@
 				/>
 				<button class="button primary">Look up</button>
 			</form>
-			<a class="button ghost" href="/app/scan?code={data.sampleBarcode}">Simulate scan</a>
 		</div>
 	{:else if data.mode === 'photo' && status === 'ready'}
 		<div class="camera-controls">
-			<button class="upload-button" onclick={analyze}
-				><Icon name="camera" /><small>Upload</small></button
+			<label class="upload-button">
+				<Icon name="camera" /><small>Upload</small>
+				<input type="file" accept="image/*" onchange={uploadPhoto} />
+			</label>
+			<button
+				class="shutter"
+				aria-label="Take photo"
+				onclick={takePhoto}
+				disabled={!!cameraError}><span></span></button
 			>
-			<button class="shutter" aria-label="Take photo" onclick={analyze}><span></span></button>
 			<span class="upload-button"></span>
+		</div>
+	{:else if data.mode === 'photo'}
+		<div class="camera-controls">
+			<button class="button primary" onclick={() => (status = 'ready')}>Retake</button>
 		</div>
 	{/if}
 </div>
