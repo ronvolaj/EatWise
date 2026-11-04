@@ -67,5 +67,6 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 </dict>
-
+   <key>NSCameraUsageDescription</key>
+   <string>EatWise nutzt die Kamera zum Scannen von Barcodes und Lebensmitteln.</string>
 </plist>
