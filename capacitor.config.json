@@ -1,0 +1,8 @@
+   {
+     "appId": "com.reialijaj.eatwise",
+     "appName": "EatWise",
+     "webDir": "capacitor-shell",
+     "server": {
+       "url": "https://eat-wise-woad.vercel.app"
+     }
+   }
