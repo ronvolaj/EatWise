@@ -21,9 +21,20 @@
 		{ label: '1½ servings', grams: food.serving * 1.5 }
 	]);
 
+	let saving = $state(false);
+
 	// Ask before "Delete food" (the "Add to Diary" button needs no question)
+	// and block the buttons while the form is sending (no double entries)
 	function confirmDelete({ action, cancel }) {
-		if (action.search === '?/delete' && !confirm(`Delete ${food.name}? It is also removed from your diary.`)) cancel();
+		if (action.search === '?/delete' && !confirm(`Delete ${food.name}? It is also removed from your diary.`)) {
+			cancel();
+			return;
+		}
+		saving = true;
+		return async ({ update }) => {
+			await update();
+			saving = false;
+		};
 	}
 </script>
 
@@ -78,7 +89,7 @@
 
 	{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
 
-	<button class="button primary sticky-action" disabled={!(quantity > 0)}>
+	<button class="button primary sticky-action" disabled={saving || !(quantity > 0)}>
 		<Icon name="plus" /> Add to Diary · {scaled(food.kcal)} kcal
 	</button>
 

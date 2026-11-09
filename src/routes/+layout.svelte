@@ -1,6 +1,6 @@
 <script>
 	import './layout.css';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import BottomNav from '../lib/components/BottomNav.svelte';
 	import Icon from '../lib/components/Icon.svelte';
 
@@ -29,6 +29,8 @@
 
 <div class="stage">
 	<div class="phone" class:dark={data.user?.theme === 'dark'}>
+		<!-- Thin green bar at the top while the next page loads -->
+		{#if navigating.to}<div class="loading-bar"></div>{/if}
 		{#if fullScreen}
 			{@render children()}
 		{:else}

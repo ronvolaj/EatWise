@@ -9,6 +9,7 @@
 
 	// The entry that is open in the edit window (null = closed)
 	let editing = $state(null);
+	let saving = $state(false);
 
 	const user = $derived(data.user);
 	const totals = $derived(sumEntries(data.entries));
@@ -19,8 +20,10 @@
 
 	// Close the edit window after saving
 	function closeAfter() {
+		saving = true;
 		return async ({ result, update }) => {
 			await update();
+			saving = false;
 			if (result.type === 'success') editing = null;
 		};
 	}
@@ -108,8 +111,8 @@
 					</select>
 				</label>
 				{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
-				<button class="button primary">Save changes</button>
-				<button class="button danger" formaction="?/remove" formnovalidate><Icon name="trash" /> Remove entry</button>
+				<button class="button primary" disabled={saving}>Save changes</button>
+				<button class="button danger" formaction="?/remove" formnovalidate disabled={saving}><Icon name="trash" /> Remove entry</button>
 			</form>
 		</div>
 	{/if}
