@@ -41,7 +41,13 @@
 {/snippet}
 
 <div class="screen">
-	<PageHeader title="Find food" subtitle="What are you eating today?" />
+		<PageHeader title="Find food" subtitle="What are you eating today?">
+		{#snippet action()}
+			<a class="icon-button header-add" href="/app/custom{extra}" aria-label="Add your own food" title="Add your own food">
+				<Icon name="plus" />
+			</a>
+		{/snippet}
+	</PageHeader>
 
 	<label class="search-box">
 		<Icon name="search" />
