@@ -9,7 +9,7 @@ export async function load({ cookies, url }) {
 }
 
 export const actions = {
-	default: async ({ request, cookies }) => {
+	default: async ({ request, cookies, url }) => {
 		const user = await requireUser(cookies);
 		const form = await request.formData();
 		const text = (name) => String(form.get(name) ?? '').trim();
@@ -32,7 +32,13 @@ export const actions = {
 		});
 		if (result.error) return fail(400, { error: result.error, values });
 
+		// Keep meal and date (e.g. coming from "+" on the Lunch card)
+		const next = new URLSearchParams();
+		for (const key of ['meal', 'date']) {
+			if (url.searchParams.get(key)) next.set(key, url.searchParams.get(key));
+		}
+
 		flash(cookies, 'Custom food saved');
-		redirect(303, `/app/food/${result.id}`);
+		redirect(303, `/app/food/${result.id}${next.size ? '?' + next : ''}`);
 	}
 };
