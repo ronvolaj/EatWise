@@ -15,7 +15,11 @@ const HINTS = {
 };
 
 /** @type {import('@sveltejs/kit').HandleServerError} */
-export function handleError({ error }) {
+export function handleError({ error, kind }) {
+	// Errors made on purpose with error(404, 'Food not found') keep their status and message.
+	// Without this line the REST API would answer every error with "Something went wrong.".
+	if (kind !== 'unknown') return;
+
 	const err = /** @type {any} */ (error);
 	const code = err?.code;
 	const isDbError = HINTS[code] || String(code ?? '').startsWith('ER_');
