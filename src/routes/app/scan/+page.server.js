@@ -2,6 +2,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { flash, requireUser } from '../../../lib/server/auth.js';
 import { addEntry, findByBarcode, findByName, today } from '../../../lib/server/data.js';
 import { SAMPLE_BARCODE } from '../../../lib/server/db.js';
+import { mealLabel } from '../../../lib/nutrition.js';
 
 // The demo result of the Food Photo mode
 const PHOTO_FOOD = 'Chicken Grain Bowl';
@@ -31,17 +32,19 @@ export const actions = {
 		const form = await request.formData();
 		const food = await findByName(PHOTO_FOOD);
 
+		const meal = String(form.get('meal') ?? 'lunch');
+
 		const result = await addEntry(
 			user.id,
 			food.id,
 			today(),
-			'lunch',
+			meal,
 			Number(form.get('quantity')),
 			'photo'
 		);
 		if (result.error) return fail(400, { error: result.error });
 
-		flash(cookies, `${food.name} added to Lunch`);
+		flash(cookies, `${food.name} added to ${mealLabel(meal)}`);
 		redirect(303, '/app/diary');
 	}
 };

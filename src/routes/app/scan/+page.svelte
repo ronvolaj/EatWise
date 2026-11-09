@@ -1,11 +1,19 @@
 <script>
+	import { enhance } from '$app/forms';
 	import Icon from '../../../lib/components/Icon.svelte';
 	import { cameraErrorMessage, capturePhoto, openCamera } from '../../../lib/camera.js';
+	import { MEALS, round } from '../../../lib/nutrition.js';
 
-	let { data } = $props();
+	let { data, form } = $props();
 
-	// Photo mode: ready (live camera) -> taken (photo is shown)
+	// Photo mode: ready (live camera) -> analyzing -> result (photo + recognized food)
 	let status = $state('ready');
+	let quantity = $state(0);
+	let saving = $state(false);
+
+	// Demo result until the CNN model is ready (Milestone 2)
+	const food = $derived(data.photoFood);
+	const per = (value) => round((value * quantity) / 100);
 
 	let video = $state(); // the <video> element with the live camera image
 	let cameraError = $state('');
@@ -61,8 +69,12 @@
 	function showPhoto(blob) {
 		if (photoUrl) URL.revokeObjectURL(photoUrl);
 		photoUrl = URL.createObjectURL(blob);
-		status = 'taken';
+		status = 'analyzing';
+		quantity = food?.serving ?? 100;
 		// Later (M2): send the photo to the food recognition model here
+		setTimeout(() => {
+			if (status === 'analyzing') status = 'result';
+		}, 1200);
 	}
 </script>
 
@@ -112,6 +124,50 @@
 		{:else}
 			<!-- The photo that was taken -->
 			<img class="camera-feed" src={photoUrl} alt="Your meal" />
+			{#if status === 'analyzing'}
+				<div class="analyzing">
+					<div class="spinner"></div>
+					<h2>Analyzing your meal…</h2>
+					<p>Recognizing food and nutrition</p>
+				</div>
+			{:else if food}
+				<form
+					class="scan-result overlay-card"
+					method="POST"
+					action="?/photo"
+					use:enhance={() => {
+						saving = true;
+						return async ({ update }) => {
+							await update();
+							saving = false;
+						};
+					}}
+				>
+					<span>{food.icon}</span>
+					<h2>{food.name}<span class="confidence">Demo</span></h2>
+					<div class="ai-macros">
+						<strong>{per(food.kcal)}<small> kcal</small></strong>
+						<span>P {per(food.protein)}g</span>
+						<span>C {per(food.carbs)}g</span>
+						<span>F {per(food.fat)}g</span>
+					</div>
+					<label class="field">
+						<span>Quantity (g)</span>
+						<input name="quantity" type="number" min="1" step="any" required bind:value={quantity} />
+					</label>
+					<label class="field">
+						<span>Add to meal</span>
+						<select name="meal" value="lunch">
+							{#each MEALS as meal}<option value={meal.id}>{meal.label}</option>{/each}
+						</select>
+					</label>
+					{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
+					<button class="button primary" disabled={saving}>
+						{saving ? 'Adding…' : 'Add to diary'}
+					</button>
+					<p class="estimate">Demo result. AI food recognition follows in Milestone 2.</p>
+				</form>
+			{/if}
 		{/if}
 	</div>
 
@@ -127,6 +183,7 @@
 				/>
 				<button class="button primary">Look up</button>
 			</form>
+			<a class="button ghost" href="/app/scan?code={data.sampleBarcode}">Try sample barcode</a>
 		</div>
 	{:else if data.mode === 'photo' && status === 'ready'}
 		<div class="camera-controls">
@@ -142,7 +199,7 @@
 			>
 			<span class="upload-button"></span>
 		</div>
-	{:else if data.mode === 'photo'}
+	{:else if data.mode === 'photo' && status === 'result'}
 		<div class="camera-controls">
 			<button class="button primary" onclick={() => (status = 'ready')}>Retake</button>
 		</div>
