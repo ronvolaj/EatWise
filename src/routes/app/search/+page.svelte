@@ -41,7 +41,7 @@
 {/snippet}
 
 <div class="screen">
-		<PageHeader title="Find food" subtitle="What are you eating today?">
+	<PageHeader title="Find food" subtitle="What are you eating today?">
 		{#snippet action()}
 			<a class="icon-button header-add" href="/app/custom{extra}" aria-label="Add your own food" title="Add your own food">
 				<Icon name="plus" />
@@ -90,10 +90,16 @@
 		<div class="empty-state">
 			<div>🔎</div>
 			<h2>Food not found</h2>
-			<p>We couldn't find “{query}”. Add it to your foods and track it anytime.</p>
-			<a class="button primary" href="/app/custom">Add Your Own Food</a>
+			{#if query.trim()}
+				<p>We couldn't find “{query.trim()}”. Add it to your foods and track it anytime.</p>
+			{:else}
+				<p>There are no foods in this category yet.</p>
+			{/if}
+			<a class="button primary" href="/app/custom{extra}">Add your own food</a>
 		</div>
 	{/if}
 
-	<a class="button secondary add-custom" href="/app/custom"><Icon name="plus" /> Add your own food</a>
+	{#if filtered.length}
+		<a class="button secondary add-custom" href="/app/custom{extra}"><Icon name="plus" /> Add your own food</a>
+	{/if}
 </div>
