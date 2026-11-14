@@ -9,6 +9,16 @@
 	let { data } = $props();
 
 	let quickOpen = $state(false);
+	let savingWater = $state(false);
+
+	// Blocks the water buttons until the last tap is saved
+	function waterEnhance() {
+		savingWater = true;
+		return async ({ update }) => {
+			await update();
+			savingWater = false;
+		};
+	}
 
 	const user = $derived(data.user);
 	const totals = $derived(sumEntries(data.entries));
@@ -20,6 +30,9 @@
 		data.week.filter((d) => d.kcal > 0 && d.kcal <= user.kcal_target * 1.1).length
 	);
 	const weekMax = $derived(Math.max(user.kcal_target, ...data.week.map((d) => d.kcal)));
+
+	// First letter of the weekday for the weekly bars (S, M, T, ...)
+	const weekday = (date) => 'SMTWTFS'[new Date(date + 'T12:00:00').getDay()];
 
 	function mealKcal(meal) {
 		return round(sumEntries(data.entries.filter((e) => e.meal === meal)).kcal);
@@ -93,20 +106,20 @@
 				{#each Array(8) as _, i}<span class:filled={i < data.water}></span>{/each}
 			</div>
 		</div>
-		<form class="water-actions" method="POST" action="?/water" use:enhance>
+		<form class="water-actions" method="POST" action="?/water" use:enhance={waterEnhance}>
 			<button
 				class="icon-button"
 				name="delta"
 				value="-1"
 				aria-label="Remove water"
-				disabled={data.water === 0}><Icon name="minus" /></button
+				disabled={savingWater || data.water === 0}><Icon name="minus" /></button
 			>
 			<button
 				class="icon-button"
 				name="delta"
 				value="1"
 				aria-label="Add water"
-				disabled={data.water === 8}><Icon name="plus" /></button
+				disabled={savingWater || data.water === 8}><Icon name="plus" /></button
 			>
 		</form>
 	</div>
@@ -133,13 +146,18 @@
 		</div>
 		<div class="mini-bars">
 			{#each data.week as day, i}
-				<span style="height: {(day.kcal / weekMax) * 100}%" class:today={i === 6}></span>
+				<div>
+					<span style="height: {(day.kcal / weekMax) * 75}%" class:today={i === 6}></span>
+					<small class:today={i === 6}>{weekday(day.date)}</small>
+				</div>
 			{/each}
 		</div>
 		<Icon name="next" />
 	</a>
 
 	{#if quickOpen}
+		<!-- Tapping anywhere outside the menu closes it -->
+		<button class="quick-backdrop" aria-label="Close menu" onclick={() => (quickOpen = false)}></button>
 		<div class="quick-menu">
 			<a href="/app/search?from=home"><Icon name="search" />Add food</a>
 			<a href="/app/scan"><Icon name="barcode" />Scan barcode</a>
