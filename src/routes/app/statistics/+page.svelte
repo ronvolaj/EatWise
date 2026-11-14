@@ -98,20 +98,27 @@
 			</div>
 			{#if status}<span class="positive" class:warn={status !== 'On target'}>{status}</span>{/if}
 		</div>
-		<div class="bar-chart" class:month={range === 'Month'}>
-			<div class="goal-line" style="top: {goalTop}px">
-				<span>{user.kcal_target.toLocaleString('en-US')} goal</span>
-			</div>
-			{#each shown as day, i}
-				<div title="{shortDate(day.date)}: {round(day.kcal)} kcal">
-					<span
-						style="height: {day.kcal > 0 ? Math.max(3, barHeight(day.kcal)) : 0}%"
-						class:active={i === shown.length - 1}
-					></span>
-					<small>{barLabel(day, i)}</small>
+		{#if logged.length}
+			<div class="bar-chart" class:month={range === 'Month'}>
+				<div class="goal-line" style="top: {goalTop}px">
+					<span>{user.kcal_target.toLocaleString('en-US')} goal</span>
 				</div>
-			{/each}
-		</div>
+				{#each shown as day, i}
+					<div title="{shortDate(day.date)}: {round(day.kcal)} kcal">
+						<span
+							style="height: {day.kcal > 0 ? Math.max(3, barHeight(day.kcal)) : 0}%"
+							class:active={i === shown.length - 1}
+						></span>
+						<small>{barLabel(day, i)}</small>
+					</div>
+				{/each}
+			</div>
+		{:else}
+			<p class="chart-empty">
+				No meals logged {range === 'Day' ? 'today' : `in the last ${range === 'Week' ? '7' : '30'} days`}.
+				<a href="/app/search">Log your first meal</a> to see your statistics.
+			</p>
+		{/if}
 	</div>
 
 	<div class="card">
