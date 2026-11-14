@@ -71,14 +71,14 @@ small { font-size: 12px; }
 .ring-inner { position: relative; display: flex; flex-direction: column; align-items: center; color: var(--text); }
 .ring-inner strong { font-size: 25px; line-height: 1; }
 .ring-inner small { color: var(--muted); margin-top: 4px; }
-.toast { position: absolute; z-index: 40; bottom: 94px; left: 16px; right: 16px; min-height: 46px; padding: 10px 14px; display: flex; align-items: center; gap: 9px; border-radius: 15px; background: #17201b; color: white; font-size: 13px; font-weight: 700; box-shadow: 0 12px 30px #0003; animation: toast-in .25s ease-out; }
+.toast { position: absolute; z-index: 40; top: 14px; pointer-events: none; left: 16px; right: 16px; min-height: 46px; padding: 10px 14px; display: flex; align-items: center; gap: 9px; border-radius: 15px; background: #17201b; color: white; font-size: 13px; font-weight: 700; box-shadow: 0 12px 30px #0003; animation: toast-in .25s ease-out; }
 .toast svg { color: #4ade80; flex: 0 0 auto; }
 /* Loading bar while a page loads (shown after a short delay so fast pages don't flicker) */
 .loading-bar { position: absolute; top: 0; left: 0; height: 3px; z-index: 50; background: #22c55e; box-shadow: 0 0 8px #22c55e; animation: loading 2s ease-out .15s both; }
 @keyframes loading { from { width: 0; } 60% { width: 70%; } to { width: 90%; } }
 .dark .toast { background: #f3f5f3; color: #17201b; }
 .dark .toast svg { color: #16a149; }
-@keyframes toast-in { from { opacity: 0; transform: translateY(12px); } }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-12px); } }
 
 /* Onboarding */
 .onboarding { height: 100%; overflow-y: auto; padding: 22px 22px 100px; background: var(--bg); }
@@ -196,6 +196,7 @@ small { font-size: 12px; }
 .dark .meal-card .icon-button { background: #1b3a27; color: #70e49a; }
 .water-card { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 10px; margin-top: 12px; }
 .water-icon { width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; background: #eaf4ff; color: #3b82f6; }
+.dark .water-icon { background: #1a2a40; color: #60a5fa; }
 .water-card h2 { font-size: 14px; }
 .water-card p { font-size: 11px; }
 .water-dots { display: flex; gap: 4px; margin-top: 6px; }
