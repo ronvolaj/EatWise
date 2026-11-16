@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import Icon from '../../../lib/components/Icon.svelte';
 	import { cameraErrorMessage, capturePhoto, openCamera } from '../../../lib/camera.js';
+	import { scanBarcode } from '../../../lib/barcode.js';
 	import { MEALS, round } from '../../../lib/nutrition.js';
 
 	let { data, form } = $props();
@@ -19,9 +20,28 @@
 	let cameraError = $state('');
 	let photoUrl = $state(''); // preview URL of the taken/uploaded photo
 
+	// Barcode scanner (Capacitor plugin): the live camera is turned off while it is open
+	let scanning = $state(false);
+	let scanned = $state(null); // { code, format } of the last scan (test output)
+	let scanError = $state('');
+
+	async function startScan() {
+		scanError = '';
+		scanned = null;
+		scanning = true;
+		try {
+			scanned = await scanBarcode();
+		} catch (error) {
+			scanError = 'The scanner could not start. Type the barcode number instead.';
+			console.error(error);
+		} finally {
+			scanning = false;
+		}
+	}
+
 	// The camera is on while scanning a barcode or before a photo is taken
 	const cameraOn = $derived(
-		(data.mode === 'barcode' && !data.notFound) || (data.mode === 'photo' && status === 'ready')
+		(data.mode === 'barcode' && !data.notFound && !scanning) || (data.mode === 'photo' && status === 'ready')
 	);
 
 	// Switching the mode resets the photo flow
@@ -173,6 +193,15 @@
 
 	{#if data.mode === 'barcode' && !data.notFound}
 		<div class="camera-controls barcode">
+			<button class="button primary scan-button" onclick={startScan} disabled={scanning}>
+				<Icon name="barcode" />
+				{scanning ? 'Scanner is open…' : 'Scan barcode'}
+			</button>
+			{#if scanned}
+				<!-- Test output (Monday): shows what the scanner read -->
+				<p class="scan-test">Scanned: <strong>{scanned.code}</strong> (format {scanned.format})</p>
+			{/if}
+			{#if scanError}<p class="form-error" role="alert">{scanError}</p>{/if}
 			<form class="barcode-form" method="GET" action="/app/scan">
 				<input
 					name="code"

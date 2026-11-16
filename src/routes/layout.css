@@ -311,6 +311,9 @@ small { font-size: 12px; }
 .camera-controls { min-height: 120px; padding: 14px 18px 96px; background: #0b0e0c; display: flex; align-items: center; justify-content: space-around; }
 .camera-controls.barcode { flex-direction: column; align-items: stretch; gap: 8px; }
 .barcode-form { display: flex; gap: 8px; }
+.scan-button { width: 100%; margin-bottom: 10px; }
+.scan-test { text-align: center; color: #f3f5f3; font-size: 13px; margin-bottom: 10px; }
+.scan-test strong { color: #70e49a; }
 .barcode-form input { flex: 1; min-width: 0; height: 52px; border-radius: 16px; border: 1.5px solid #303832; background: #1b201d; color: white; padding: 0 14px; }
 .barcode-form input::placeholder { color: #8d9890; }
 .camera-controls .button.ghost { color: #b2bdb5; min-height: 40px; font-size: 12px; }
