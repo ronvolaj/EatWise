@@ -4,6 +4,8 @@ import { redirect } from '@sveltejs/kit';
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { isId, pool, query, queryOne } from './db.js';
 import { calculatePlan } from '../nutrition.js';
+// Error texts in the user's language (messages/en.json, de.json, sq.json)
+import { m } from '../paraglide/messages.js';
 import { today } from './data.js';
 
 const COOKIE = 'eatwise_session';
@@ -97,26 +99,26 @@ export async function register(cookies, input) {
 	const weight = Number(input.weight);
 	const target = Number(input.target);
 
-	if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: 'Enter a valid email address.' };
-	if (username.length < 3) return { error: 'Use at least 3 characters for your username.' };
-	if (username.length > 50) return { error: 'Use at most 50 characters for your username.' };
-	if (input.password.length < 6) return { error: 'Use at least 6 characters for your password.' };
-	if (input.password !== input.confirm) return { error: "Passwords don't match." };
-	if (!['lose', 'maintain', 'gain'].includes(input.goal)) return { error: 'Choose a goal.' };
-	if (!['male', 'female'].includes(input.sex)) return { error: 'Choose your biological sex.' };
-	if (!['low', 'medium', 'high'].includes(input.activity)) return { error: 'Choose your activity level.' };
-	if (!(height >= 80 && height <= 260)) return { error: 'Enter a height between 80 and 260 cm.' };
-	if (!(weight >= 30 && weight <= 400)) return { error: 'Enter a weight between 30 and 400 kg.' };
-	if (!(target >= 30 && target <= 400)) return { error: 'Enter a target weight between 30 and 400 kg.' };
+		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: m.auth_error_email() };
+	if (username.length < 3) return { error: m.auth_error_username_short() };
+	if (username.length > 50) return { error: m.auth_error_username_long() };
+	if (input.password.length < 6) return { error: m.auth_error_password_short() };
+	if (input.password !== input.confirm) return { error: m.auth_error_password_match() };
+	if (!['lose', 'maintain', 'gain'].includes(input.goal)) return { error: m.auth_error_goal() };
+	if (!['male', 'female'].includes(input.sex)) return { error: m.auth_error_sex() };
+	if (!['low', 'medium', 'high'].includes(input.activity)) return { error: m.auth_error_activity() };
+	if (!(height >= 80 && height <= 260)) return { error: m.auth_error_height() };
+	if (!(weight >= 30 && weight <= 400)) return { error: m.auth_error_weight() };
+	if (!(target >= 30 && target <= 400)) return { error: m.auth_error_target() };
 	if (!/^\d{4}-\d{2}-\d{2}$/.test(input.birth) || input.birth > today()) {
-		return { error: 'Enter a valid date of birth.' };
+		return { error: m.auth_error_birth() };
 	}
 
 	if (await queryOne('SELECT id FROM users WHERE email = ?', [email])) {
-		return { error: 'An account with this email already exists. Sign in instead.' };
+		return { error: m.auth_error_email_taken() };
 	}
 	if (await queryOne('SELECT id FROM users WHERE username = ?', [username])) {
-		return { error: 'This username is taken. Choose another one.' };
+		return { error: m.auth_error_username_taken() };
 	}
 
 	const plan = calculatePlan({ ...input, height, weight });
@@ -162,7 +164,7 @@ export async function register(cookies, input) {
 export async function login(cookies, email, password) {
 	const user = await queryOne('SELECT id, password_hash FROM users WHERE email = ?', [email]);
 	if (!user || !checkPassword(password, user.password_hash)) {
-		return { error: 'Email or password is incorrect.' };
+				return { error: m.auth_error_login() };
 	}
 	await createSession(cookies, user.id);
 	return {};

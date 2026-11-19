@@ -111,6 +111,10 @@ small { font-size: 12px; }
 .onboarding-content > .segmented { margin-bottom: 35px; }
 .big-input { width: 240px; height: 100px; margin: 28px auto; display: flex; align-items: baseline; justify-content: center; border-bottom: 2px solid #22c55e; }
 .big-input input { width: 155px; border: 0; background: none; color: var(--text); text-align: right; font-size: 62px; font-weight: 800; outline: 0; }
+/* Hide the browser's up/down arrows on the big number inputs */
+.big-input input::-webkit-outer-spin-button,
+.big-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.big-input input { -moz-appearance: textfield; appearance: textfield; }
 .big-input span { color: var(--muted); font-size: 19px; margin-left: 8px; }
 .height-visual { margin: 45px auto; height: 120px; width: 120px; border-left: 2px dashed #9ae6b0; color: #22c55e; font-size: 44px; display: flex; align-items: center; justify-content: center; position: relative; }
 .height-visual span { position: absolute; bottom: -22px; width: 180px; text-align: center; color: var(--muted); font-size: 13px; }
@@ -140,6 +144,12 @@ small { font-size: 12px; }
 .password-field { position: relative; }
 .password-field .icon-button { position: absolute; right: 5px; top: 27px; background: none; }
 .terms { font-size: 11px; text-align: center; }
+/* EN / DE / SQ switch on Sign In and the first onboarding step */
+.lang-switch { display: flex; gap: 2px; padding: 3px; border-radius: 12px; background: var(--soft); }
+.lang-switch button { height: 28px; min-width: 36px; padding: 0 8px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); font-size: 11px; font-weight: 800; cursor: pointer; }
+.lang-switch button.active { background: var(--card); color: var(--text); box-shadow: 0 2px 8px #25382b12; }
+.signin > .lang-switch { width: fit-content; margin: 0 0 14px auto; }
+.onboarding-top .lang-switch { justify-self: end; }
 .signin { padding-top: 25px; }
 .signin .auth-logo { display: grid; place-items: center; margin: 50px 0 36px; }
 .signin .auth-logo img { width: 170px; height: auto; }

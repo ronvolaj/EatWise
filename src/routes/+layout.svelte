@@ -1,4 +1,6 @@
 <script>
+	import { resolve } from '$app/paths';
+	import { locales, localizeHref } from '#lib/paraglide/runtime.js';
 	import './layout.css';
 	import { navigating, page } from '$app/state';
 	import BottomNav from '../lib/components/BottomNav.svelte';
@@ -10,7 +12,9 @@
 	const path = $derived(page.url.pathname);
 	const tabs = ['/app/homepage', '/app/search', '/app/scan', '/app/diary', '/app/profile'];
 	// Onboarding and Sign In fill the whole phone and have no navigation
-	const fullScreen = $derived(!data.user || path === '/' || path === '/app/login' || path === '/app/register');
+	const fullScreen = $derived(
+		!data.user || path === '/' || path === '/app/login' || path === '/app/register'
+	);
 	const showNav = $derived(tabs.includes(path));
 
 	// Green message at the top after an action ("Banana added to Lunch")
@@ -34,14 +38,21 @@
 		{#if fullScreen}
 			{@render children()}
 		{:else}
-			<div class="app-scroll" class:no-nav={!showNav}>
-				{@render children()}
-			</div>
-			{#if showNav}<BottomNav {path} />{/if}
+			<div class="app-scroll" class:no-nav={!showNav}>{@render children()}</div>
+
+			{#if showNav}
+				<BottomNav {path} />
+			{/if}
 		{/if}
 
 		{#if toast}
 			<div class="toast" role="status"><Icon name="check" />{toast}</div>
 		{/if}
 	</div>
+</div>
+
+<div style="display:none">
+	{#each locales as locale (locale)}
+		<a href={resolve(localizeHref(page.url.pathname, { locale }))}>{locale}</a>
+	{/each}
 </div>

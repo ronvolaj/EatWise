@@ -1,6 +1,9 @@
+import { getTextDirection } from '#lib/paraglide/runtime.js';
+import { paraglideMiddleware } from '#lib/paraglide/server.js';
+
 // Runs on the server when a page or form crashes.
 // It prints a clear hint in the terminal and (during "npm run dev") also shows it on the page.
-import { dev } from '$app/environment';
+import { dev } from '$app/env';
 import { dbConfig } from './lib/server/db.js';
 
 const HINTS = {
@@ -11,7 +14,8 @@ const HINTS = {
 	ER_DBACCESS_DENIED_ERROR: `Your MySQL user has no access to the database "${dbConfig.database}". Check DB_NAME and DB_USER in .env.`,
 	ER_BAD_DB_ERROR: `The database "${dbConfig.database}" does not exist. Check DB_NAME in .env.`,
 	ER_NO_SUCH_TABLE: 'A table is missing in the database. Check the tables in DataGrip.',
-	ER_BAD_FIELD_ERROR: 'A column is missing - the tables in the database are different from what the app expects. Check the tables in DataGrip.'
+	ER_BAD_FIELD_ERROR:
+		'A column is missing - the tables in the database are different from what the app expects. Check the tables in DataGrip.'
 };
 
 /** @type {import('@sveltejs/kit').HandleServerError} */
@@ -26,10 +30,31 @@ export function handleError({ error, kind }) {
 
 	if (isDbError) {
 		const hint = HINTS[code] ?? 'MySQL rejected the query.';
-		console.error(`\n[EatWise] Database problem (${code}): ${hint}\n  MySQL says: ${err.sqlMessage ?? err.message}\n`);
-		return { message: dev ? `Database problem (${code}): ${hint} — MySQL says: ${err.sqlMessage ?? err.message}` : 'Database problem - see the server terminal.' };
+		console.error(
+			`\n[EatWise] Database problem (${code}): ${hint}\n  MySQL says: ${err.sqlMessage ?? err.message}\n`
+		);
+		return {
+			message: dev
+				? `Database problem (${code}): ${hint} — MySQL says: ${err.sqlMessage ?? err.message}`
+				: 'Database problem - see the server terminal.'
+		};
 	}
 
 	console.error(error);
 	return { message: dev ? `Error: ${err?.message ?? error}` : 'Something went wrong.' };
 }
+
+/** @type {import('@sveltejs/kit/hooks').Handle} */ const handleParaglide = ({ event, resolve }) =>
+	paraglideMiddleware(event.request, ({ request, locale }) => {
+		return resolve(
+			{ ...event, request },
+			{
+				transformPageChunk: ({ html }) =>
+					html
+						.replace('%paraglide.lang%', locale)
+						.replace('%paraglide.dir%', getTextDirection(locale))
+			}
+		);
+	});
+
+export /** @type {import('@sveltejs/kit/hooks').Handle} */ const handle = handleParaglide;

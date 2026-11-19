@@ -7,7 +7,10 @@
 	import logoFull from '../../../lib/assets/logo-full.png';
 	import Ring from '../../../lib/components/Ring.svelte';
 	import MacroBadge from '../../../lib/components/MacroBadge.svelte';
-	import { calculatePlan, GOALS, round } from '../../../lib/nutrition.js';
+	import LanguageSwitch from '../../../lib/components/LanguageSwitch.svelte';
+	import { calculatePlan, round } from '../../../lib/nutrition.js';
+	import { m } from '../../../lib/paraglide/messages.js';
+	import { getLocale } from '../../../lib/paraglide/runtime.js';
 
 	// step 0-6: questions, 7: results, 8: create account, 9: loading screen
 	let step = $state(0);
@@ -19,22 +22,24 @@
 	let loadingMessage = $state(0);
 
 	const todayDate = new Date().toISOString().split('T')[0];
-	const loadingMessages = ['Calculating your daily targets', 'Personalizing your experience', 'Preparing your food diary'];
+	const loadingMessages = [m.register_loading_1(), m.register_loading_2(), m.register_loading_3()];
 
 	const goalCards = [
-		{ icon: '↘', title: 'Lose Weight', note: 'A steady, sustainable approach', value: 'lose' },
-		{ icon: '＝', title: 'Maintain Weight', note: 'Build healthy, lasting habits', value: 'maintain' },
-		{ icon: '↗', title: 'Gain Weight', note: 'Fuel strength and growth', value: 'gain' }
+		{ icon: '↘', title: m.register_goal_lose(), note: m.register_goal_lose_note(), value: 'lose' },
+		{ icon: '＝', title: m.register_goal_maintain(), note: m.register_goal_maintain_note(), value: 'maintain' },
+		{ icon: '↗', title: m.register_goal_gain(), note: m.register_goal_gain_note(), value: 'gain' }
 	];
 	const sexCards = [
-		{ icon: '♂', title: 'Male', value: 'male' },
-		{ icon: '♀', title: 'Female', value: 'female' }
+		{ icon: '♂', title: m.register_sex_male(), value: 'male' },
+		{ icon: '♀', title: m.register_sex_female(), value: 'female' }
 	];
 	const activityCards = [
-		{ icon: '🪑', title: 'Low', note: 'Mostly sitting', value: 'low' },
-		{ icon: '🚶', title: 'Medium', note: 'Sitting plus regular walking', value: 'medium' },
-		{ icon: '🏃', title: 'A lot', note: 'Physically demanding days', value: 'high' }
+		{ icon: '🪑', title: m.register_activity_low(), note: m.register_activity_low_note(), value: 'low' },
+		{ icon: '🚶', title: m.register_activity_medium(), note: m.register_activity_medium_note(), value: 'medium' },
+		{ icon: '🏃', title: m.register_activity_high(), note: m.register_activity_high_note(), value: 'high' }
 	];
+	// Goal name in the chosen language for the results summary
+	const goalNames = { lose: m.register_goal_lose(), maintain: m.register_goal_maintain(), gain: m.register_goal_gain() };
 
 	const nutrition = $derived(calculatePlan(plan));
 
@@ -56,19 +61,19 @@
 
 	const targetQuestion = $derived(
 		plan.goal === 'lose'
-			? 'How much weight do you want to lose?'
+			? m.register_target_lose()
 			: plan.goal === 'gain'
-				? 'How much weight do you want to gain?'
-				: 'Do you have a target weight?'
+				? m.register_target_gain()
+				: m.register_target_maintain()
 	);
 	const explanation = $derived(
 		nutrition.age < 18
-			? 'Your plan supports healthy daily energy needs without a calorie deficit or surplus.'
+			? m.register_explain_young()
 			: plan.goal === 'lose'
-				? 'This balanced plan creates a gentle calorie deficit to support steady, sustainable progress.'
+				? m.register_explain_lose()
 				: plan.goal === 'gain'
-					? 'This balanced plan adds a moderate calorie surplus to support gradual, sustainable growth.'
-					: 'This balanced plan supports your current weight and helps build consistent habits.'
+					? m.register_explain_gain()
+					: m.register_explain_maintain()
 	);
 
 	// Loading screen: rotate the messages, then open Home
@@ -87,10 +92,10 @@
 		serverError = '';
 		return async ({ result }) => {
 			if (result.type === 'success') step = 9;
-			else if (result.type === 'failure') serverError = result.data?.error ?? 'Something went wrong.';
+			else if (result.type === 'failure') serverError = result.data?.error ?? m.common_something_wrong();
 			// The real reason comes from src/hooks.server.js (also printed in the terminal)
-			else if (result.type === 'error') serverError = result.error?.message ?? 'Something went wrong. Please try again.';
-			else serverError = 'Something went wrong. Please try again.';
+			else if (result.type === 'error') serverError = result.error?.message ?? m.common_try_again();
+			else serverError = m.common_try_again();
 		};
 	}
 </script>
@@ -130,8 +135,8 @@
 	<div class="loading-page">
 		<img class="loader-logo" src={logoFull} alt="EatWise" />
 		<div class="orbit"><span>🥑</span></div>
-		<h1>Creating your profile...</h1>
-		<p>We're setting up your personal nutrition plan.<br />Just a moment!</p>
+		<h1>{m.register_loading_title()}</h1>
+		<p>{m.register_loading_text_1()}<br />{m.register_loading_text_2()}</p>
 		<div class="loading-message">{loadingMessages[loadingMessage]}</div>
 	</div>
 {:else}
@@ -139,11 +144,15 @@
 		{#if step < 8}
 			<div class="onboarding-top">
 				{#if step > 0}
-					<button type="button" class="icon-button" aria-label="Back" onclick={() => (step -= 1)}><Icon name="back" /></button>
+					<button type="button" class="icon-button" aria-label={m.common_back()} onclick={() => (step -= 1)}><Icon name="back" /></button>
 				{:else}
 					<Logo />
 				{/if}
-				<span>Step {step + 1} of 9</span>
+				{#if step === 0}
+					<LanguageSwitch />
+				{:else}
+					<span>{m.register_step({ current: step + 1, total: 9 })}</span>
+				{/if}
 				<div class="step-track"><span style="width: {((step + 1) / 9) * 100}%"></span></div>
 			</div>
 		{/if}
@@ -151,24 +160,24 @@
 		<main class="onboarding-content">
 			{#if step === 0}
 				<img class="welcome-mark" src={logoMark} alt="EatWise logo" />
-				<h1>Eat better.<br />Feel better.</h1>
-				<p>Personalized nutrition made simple, one meal at a time.</p>
-				<h2>What's your goal?</h2>
+				<h1>{m.register_welcome_title_1()}<br />{m.register_welcome_title_2()}</h1>
+				<p>{m.register_welcome_text()}</p>
+				<h2>{m.register_goal_question()}</h2>
 				{@render cards(goalCards, 'goal')}
-				<a class="text-link" href="/app/login">Already have an account? <strong>Sign In</strong></a>
+				<a class="text-link" href="/app/login">{m.register_have_account()} <strong>{m.common_sign_in()}</strong></a>
 			{:else if step === 1}
-				{@render question("What's your biological sex?", 'Used to estimate your daily calorie requirements.')}
+				{@render question(m.register_sex_question(), m.register_sex_note())}
 				{@render cards(sexCards, 'sex')}
 			{:else if step === 2}
-				{@render question('How tall are you?', 'This helps us calculate your daily energy needs.')}
+				{@render question(m.register_height_question(), m.register_height_note())}
 				{@render unitSwitch('cm', 'ft / in')}
 				<div class="big-input">
 					{#if unit === 'metric'}
-						<input type="number" aria-label="Height in centimeters" bind:value={plan.height} /><span>cm</span>
+						<input type="number" aria-label={m.register_height_cm_label()} bind:value={plan.height} /><span>cm</span>
 					{:else}
 						<input
 							type="number"
-							aria-label="Height in inches"
+							aria-label={m.register_height_in_label()}
 							value={round(plan.height / 2.54)}
 							oninput={(e) => (plan.height = round(Number(e.currentTarget.value) * 2.54))}
 						/><span>in</span>
@@ -178,72 +187,72 @@
 					↕
 					<span>
 						{unit === 'metric'
-							? `${plan.height} centimeters`
+							? m.register_height_cm_text({ value: plan.height })
 							: `${Math.floor(round(plan.height / 2.54) / 12)}′ ${round(plan.height / 2.54) % 12}″`}
 					</span>
 				</div>
 			{:else if step === 3}
-				{@render question("What's your current weight?", 'You can update this anytime in your profile.')}
+				{@render question(m.register_weight_question(), m.register_weight_note())}
 				{@render unitSwitch('kg', 'lb')}
 				<div class="big-input">
 					{#if unit === 'metric'}
-						<input type="number" aria-label="Weight in kilograms" bind:value={plan.weight} /><span>kg</span>
+						<input type="number" aria-label={m.register_weight_kg_label()} bind:value={plan.weight} /><span>kg</span>
 					{:else}
 						<input
 							type="number"
-							aria-label="Weight in pounds"
+							aria-label={m.register_weight_lb_label()}
 							value={round(plan.weight * 2.205)}
 							oninput={(e) => (plan.weight = round(Number(e.currentTarget.value) / 2.205))}
 						/><span>lb</span>
 					{/if}
 				</div>
 			{:else if step === 4}
-				{@render question(targetQuestion, 'A realistic pace makes progress easier to maintain.')}
+				{@render question(targetQuestion, m.register_target_note())}
 				<div class="big-input">
-					<input type="number" aria-label="Target weight in kilograms" bind:value={plan.target} /><span>kg</span>
+					<input type="number" aria-label={m.register_target_label()} bind:value={plan.target} /><span>kg</span>
 				</div>
 				<div class="weight-compare">
-					<div class="card"><small>Current</small><strong>{plan.weight} kg</strong></div>
+					<div class="card"><small>{m.common_current()}</small><strong>{plan.weight} kg</strong></div>
 					<Icon name="next" />
-					<div class="card"><small>Target</small><strong>{plan.target} kg</strong></div>
+					<div class="card"><small>{m.common_target()}</small><strong>{plan.target} kg</strong></div>
 				</div>
 			{:else if step === 5}
-				{@render question('When were you born?', 'Your age helps us personalize your nutrition plan.')}
+				{@render question(m.register_birth_question(), m.register_birth_note())}
 				<label class="field">
-					<span>Date of birth</span>
+					<span>{m.register_birth_label()}</span>
 					<input type="date" max={todayDate} bind:value={plan.birth} />
 				</label>
 				<div class="birthday-art">🎂</div>
 			{:else if step === 6}
-				{@render question('How active are you in your everyday life?', 'Think about your typical week, excluding planned workouts.')}
+				{@render question(m.register_activity_question(), m.register_activity_note())}
 				{@render cards(activityCards, 'activity')}
 			{:else if step === 7}
 				<div class="results">
 					<div class="success-badge"><Icon name="check" /></div>
-					<h1>Your daily nutrition<br />plan is ready!</h1>
-					<p>Built around your body, lifestyle and goal.</p>
+					<h1>{m.register_result_title_1()}<br />{m.register_result_title_2()}</h1>
+					<p>{m.register_result_subtitle()}</p>
 					<Ring value={nutrition.kcal} max={Math.max(2600, nutrition.kcal + 400)} color="orange" size={164}>
-						<strong>{nutrition.kcal.toLocaleString('en-US')}</strong><small>kcal / day</small>
+						<strong>{nutrition.kcal.toLocaleString(getLocale())}</strong><small>{m.register_result_kcal()}</small>
 					</Ring>
 					<div class="result-macros">
-						<MacroBadge color="blue" label="Protein" value="{nutrition.protein}g" />
-						<MacroBadge color="amber" label="Carbs" value="{nutrition.carbs}g" />
-						<MacroBadge color="purple" label="Fat" value="{nutrition.fat}g" />
+						<MacroBadge color="blue" label={m.register_protein()} value="{nutrition.protein}g" />
+						<MacroBadge color="amber" label={m.register_carbs()} value="{nutrition.carbs}g" />
+						<MacroBadge color="purple" label={m.register_fat()} value="{nutrition.fat}g" />
 					</div>
 					<div class="card plan-summary">
-						<div><span>Current</span><strong>{plan.weight} kg</strong></div>
-						<div><span>Goal</span><strong>{GOALS[plan.goal]}</strong></div>
-						<div><span>Target</span><strong>{plan.target} kg</strong></div>
+						<div><span>{m.common_current()}</span><strong>{plan.weight} kg</strong></div>
+						<div><span>{m.common_goal()}</span><strong>{goalNames[plan.goal]}</strong></div>
+						<div><span>{m.common_target()}</span><strong>{plan.target} kg</strong></div>
 					</div>
 					<p class="explain">{explanation}</p>
-					<small class="medical">This is an estimate, not medical advice.</small>
+					<small class="medical">{m.register_medical()}</small>
 				</div>
 			{:else if step === 8}
 				<header class="page-header">
-					<button type="button" class="icon-button" aria-label="Back" onclick={() => (step = 7)}><Icon name="back" /></button>
+					<button type="button" class="icon-button" aria-label={m.common_back()} onclick={() => (step = 7)}><Icon name="back" /></button>
 					<div>
-						<h1>Create your account</h1>
-						<p>Save your goals, track your progress, and access your nutrition plan anytime.</p>
+						<h1>{m.register_account_title()}</h1>
+						<p>{m.register_account_text()}</p>
 					</div>
 				</header>
 
@@ -258,43 +267,43 @@
 					<input type="hidden" name="activity" value={plan.activity} />
 
 					<label class="field">
-						<span>Email</span>
+						<span>{m.common_email()}</span>
 						<input name="email" type="email" autocomplete="email" placeholder="alex@example.com" bind:value={account.email} />
-						{#if account.email && !emailOk}<small class="error">Enter a valid email</small>{/if}
+						{#if account.email && !emailOk}<small class="error">{m.register_error_email()}</small>{/if}
 					</label>
 					<label class="field">
-						<span>Username</span>
+						<span>{m.register_username()}</span>
 						<input name="username" autocomplete="username" placeholder="alexwise" bind:value={account.username} />
-						{#if account.username && account.username.trim().length < 3}<small class="error">Use at least 3 characters</small>{/if}
+						{#if account.username && account.username.trim().length < 3}<small class="error">{m.register_error_username()}</small>{/if}
 					</label>
 					<div class="password-field">
 						<label class="field">
-							<span>Password</span>
-							<input name="password" type={showPassword ? 'text' : 'password'} autocomplete="new-password" placeholder="At least 6 characters" bind:value={account.password} />
-							{#if account.password && account.password.length < 6}<small class="error">Use at least 6 characters</small>{/if}
+							<span>{m.common_password()}</span>
+							<input name="password" type={showPassword ? 'text' : 'password'} autocomplete="new-password" placeholder={m.register_password_placeholder()} bind:value={account.password} />
+							{#if account.password && account.password.length < 6}<small class="error">{m.register_error_password()}</small>{/if}
 						</label>
-						<button type="button" class="icon-button" aria-label={showPassword ? 'Hide password' : 'Show password'} onclick={() => (showPassword = !showPassword)}>
+						<button type="button" class="icon-button" aria-label={showPassword ? m.register_hide_password() : m.register_show_password()} onclick={() => (showPassword = !showPassword)}>
 							<Icon name="eye" />
 						</button>
 					</div>
 					<label class="field">
-						<span>Confirm password</span>
-						<input name="confirm" type={showPassword ? 'text' : 'password'} autocomplete="new-password" placeholder="Repeat your password" bind:value={account.confirm} />
-						{#if account.confirm && account.confirm !== account.password}<small class="error">Passwords don't match</small>{/if}
+						<span>{m.register_confirm()}</span>
+						<input name="confirm" type={showPassword ? 'text' : 'password'} autocomplete="new-password" placeholder={m.register_confirm_placeholder()} bind:value={account.confirm} />
+						{#if account.confirm && account.confirm !== account.password}<small class="error">{m.register_error_confirm()}</small>{/if}
 					</label>
 
 					{#if serverError}<p class="form-error" role="alert">{serverError}</p>{/if}
-					<p class="terms">Your account and your nutrition plan are saved in the EatWise database.</p>
+					<p class="terms">{m.register_terms()}</p>
 				</form>
 			{/if}
 		</main>
 
 		<div class="onboarding-footer">
 			{#if step === 8}
-				<button class="button primary" form="account-form" disabled={!answered}>Create Account <Icon name="next" /></button>
+				<button class="button primary" form="account-form" disabled={!answered}>{m.register_create_button()} <Icon name="next" /></button>
 			{:else}
 				<button type="button" class="button primary" disabled={!answered} onclick={() => (step += 1)}>
-					{step === 7 ? 'Get Started' : 'Continue'} <Icon name="next" />
+					{step === 7 ? m.register_get_started() : m.common_continue()} <Icon name="next" />
 				</button>
 			{/if}
 		</div>
