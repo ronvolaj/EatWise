@@ -1,5 +1,6 @@
 <script>
 	import { enhance } from '$app/forms';
+		import { goto } from '$app/navigation';
 	import Icon from '../../../lib/components/Icon.svelte';
 	import { cameraErrorMessage, capturePhoto, openCamera } from '../../../lib/camera.js';
 	import { scanBarcode } from '../../../lib/barcode.js';
@@ -22,15 +23,16 @@
 
 	// Barcode scanner (Capacitor plugin): the live camera is turned off while it is open
 	let scanning = $state(false);
-	let scanned = $state(null); // { code, format } of the last scan (test output)
 	let scanError = $state('');
 
+	// Opens the scanner, then looks the code up like the "Look up" button does:
+	// known product -> food page, unknown product -> "Product not found"
 	async function startScan() {
 		scanError = '';
-		scanned = null;
 		scanning = true;
 		try {
-			scanned = await scanBarcode();
+			const result = await scanBarcode();
+			if (result) await goto(`/app/scan?code=${encodeURIComponent(result.code)}`);
 		} catch (error) {
 			scanError = 'The scanner could not start. Type the barcode number instead.';
 			console.error(error);
@@ -193,14 +195,10 @@
 
 	{#if data.mode === 'barcode' && !data.notFound}
 		<div class="camera-controls barcode">
-			<button class="button primary scan-button" onclick={startScan} disabled={scanning}>
+						<button class="button primary scan-button" onclick={startScan} disabled={scanning}>
 				<Icon name="barcode" />
-				{scanning ? 'Scanner is open…' : 'Scan barcode'}
+				{scanning ? 'Scanning…' : 'Scan barcode'}
 			</button>
-			{#if scanned}
-				<!-- Test output (Monday): shows what the scanner read -->
-				<p class="scan-test">Scanned: <strong>{scanned.code}</strong> (format {scanned.format})</p>
-			{/if}
 			{#if scanError}<p class="form-error" role="alert">{scanError}</p>{/if}
 			<form class="barcode-form" method="GET" action="/app/scan">
 				<input
