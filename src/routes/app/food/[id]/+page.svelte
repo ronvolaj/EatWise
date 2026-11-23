@@ -47,6 +47,10 @@
 		<span>{food.icon}</span>
 		<h1>{food.name}</h1>
 		<p>{food.brand}</p>
+				{#if food.category === 'Scanned'}
+			<!-- Required by the Open Food Facts license (ODbL) -->
+			<small class="data-source">Product data: Open Food Facts</small>
+		{/if}
 	</div>
 
 	<div class="card nutrition-hero">

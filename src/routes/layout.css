@@ -263,6 +263,7 @@ small { font-size: 12px; }
 .empty-state h2 { font-size: 20px; margin-top: 13px; }
 .empty-state p { font-size: 13px; margin: 8px 0 20px; }
 .food-hero { text-align: center; padding: 5px 0 20px; }
+.food-hero .data-source { display: block; margin-top: 4px; color: var(--muted); font-size: 11px; }
 .food-hero > span { width: 90px; height: 90px; margin: auto; display: grid; place-items: center; border-radius: 28px; background: var(--soft); font-size: 50px; }
 .food-hero h1 { font-size: 25px; margin-top: 12px; }
 .food-hero p { font-size: 12px; }

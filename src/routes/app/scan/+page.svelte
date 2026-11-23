@@ -130,7 +130,13 @@
 				<div class="scan-result overlay-card">
 					<span>?</span>
 					<h2>Product not found</h2>
-					<p>Barcode {data.notFound} isn't in our database yet.</p>
+										{#if data.offStatus === 'error'}
+						<p>Open Food Facts could not be reached. Check your internet connection and try again.</p>
+					{:else if data.offStatus === 'incomplete'}
+						<p>Barcode {data.notFound} is in Open Food Facts, but its nutrition values are missing.</p>
+					{:else}
+						<p>Barcode {data.notFound} isn't in our database or in Open Food Facts yet.</p>
+					{/if}	
 					<a class="button primary" href="/app/custom?barcode={encodeURIComponent(data.notFound)}"
 						>Add product manually</a
 					>

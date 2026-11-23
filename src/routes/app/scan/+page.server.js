@@ -1,6 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { flash, requireUser } from '../../../lib/server/auth.js';
-import { addEntry, findByBarcode, findByName, today } from '../../../lib/server/data.js';
+import { addEntry, createFood, findByBarcode, findByName, today } from '../../../lib/server/data.js';
+import { lookupBarcode } from '../../../lib/server/openfoodfacts.js';
 import { SAMPLE_BARCODE } from '../../../lib/server/db.js';
 import { mealLabel } from '../../../lib/nutrition.js';
 
@@ -11,15 +12,32 @@ export async function load({ cookies, url }) {
 	const user = await requireUser(cookies);
 	const code = (url.searchParams.get('code') ?? '').trim();
 
-	// Barcode entered: look it up in the database
+	// Why a barcode was not found: '' | 'unknown' | 'incomplete' | 'error'
+	let offStatus = '';
+
+	// Barcode entered: look it up in our database first
 	if (code) {
 		const food = await findByBarcode(code, user.id);
 		if (food) redirect(303, `/app/food/${food.id}?from=scan`);
+
+		// Not in our database: ask Open Food Facts (only real product barcodes with 8-14 digits).
+		// A product found there is saved as a built-in food, so the next scan finds it in our database.
+		offStatus = 'unknown';
+		if (/^\d{8,14}$/.test(code)) {
+			const result = await lookupBarcode(code);
+			if (result.food) {
+				const saved = await createFood(null, result.food);
+				if (saved.id) redirect(303, `/app/food/${saved.id}?from=scan`);
+			}
+			if (result.incomplete) offStatus = 'incomplete';
+			if (result.error) offStatus = 'error';
+		}
 	}
 
 	return {
 		mode: url.searchParams.get('mode') === 'photo' ? 'photo' : 'barcode',
 		notFound: code, // '' = nothing searched yet
+		offStatus,
 		sampleBarcode: SAMPLE_BARCODE,
 		photoFood: await findByName(PHOTO_FOOD)
 	};
