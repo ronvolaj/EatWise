@@ -22,11 +22,11 @@
 	<div class="form-stack">
 		<label class="field">
 			<span>Food name *</span>
-			<input name="name" placeholder="e.g. Homemade granola" required value={old.name ?? ''} />
+			<input name="name" placeholder="e.g. Homemade granola" required value={old.name ?? data.name} />
 		</label>
 		<label class="field">
 			<span>Brand</span>
-			<input name="brand" placeholder="Optional" value={old.brand ?? ''} />
+			<input name="brand" placeholder="Optional" value={old.brand ?? data.brand} />
 		</label>
 		<label class="field">
 			<span>Barcode</span>

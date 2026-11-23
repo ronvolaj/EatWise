@@ -5,7 +5,9 @@ import { createFood } from '../../../lib/server/data.js';
 export async function load({ cookies, url }) {
 	await requireUser(cookies);
 	// Coming from "Product not found": the barcode is already filled in
-	return { barcode: url.searchParams.get('barcode') ?? '' };
+		// Coming from "Product not found": barcode (and name/brand from Open Food Facts) are already filled in
+	const get = (key) => (url.searchParams.get(key) ?? '').slice(0, 100);
+	return { barcode: get('barcode'), name: get('name'), brand: get('brand') };
 }
 
 export const actions = {

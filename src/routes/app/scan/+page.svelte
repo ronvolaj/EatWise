@@ -127,20 +127,40 @@
 
 		{#if data.mode === 'barcode'}
 			{#if data.notFound}
-				<div class="scan-result overlay-card">
+								<div class="scan-result overlay-card">
 					<span>?</span>
-					<h2>Product not found</h2>
-										{#if data.offStatus === 'error'}
+					{#if data.offStatus === 'not-product'}
+						<!-- e.g. a QR code with a website or text instead of a product barcode -->
+						<h2>Not a product code</h2>
+						<p>This code doesn't contain a product barcode. Scan the barcode on the package instead.</p>
+						<a class="button primary" href="/app/scan">Scan again</a>
+					{:else if data.offStatus === 'error'}
+						<h2>No connection</h2>
 						<p>Open Food Facts could not be reached. Check your internet connection and try again.</p>
-					{:else if data.offStatus === 'incomplete'}
-						<p>Barcode {data.notFound} is in Open Food Facts, but its nutrition values are missing.</p>
+						<a class="button primary" href="/app/scan?code={encodeURIComponent(data.notFound)}">Try again</a>
+						<a class="button ghost" href="/app/custom?barcode={encodeURIComponent(data.barcode)}"
+							>Add product manually</a
+						>
 					{:else}
-						<p>Barcode {data.notFound} isn't in our database or in Open Food Facts yet.</p>
-					{/if}	
-					<a class="button primary" href="/app/custom?barcode={encodeURIComponent(data.notFound)}"
-						>Add product manually</a
-					>
-					<a class="button ghost" href="/app/scan">Try again</a>
+						<h2>Product not found</h2>
+						{#if data.offStatus === 'incomplete'}
+							<p>
+								{data.offProduct?.name || `Barcode ${data.barcode}`} is in Open Food Facts, but its nutrition
+								values are missing. Add them from the package.
+							</p>
+						{:else}
+							<p>Barcode {data.barcode} isn't in our database or in Open Food Facts yet.</p>
+						{/if}
+						<a
+							class="button primary"
+							href="/app/custom?{new URLSearchParams({
+								barcode: data.barcode,
+								name: data.offProduct?.name ?? '',
+								brand: data.offProduct?.brand ?? ''
+							})}">Add product manually</a
+						>
+						<a class="button ghost" href="/app/scan">Try again</a>
+					{/if}
 				</div>
 			{:else}
 				<div class="scan-frame"><span></span><span></span><span></span><span></span><i></i></div>

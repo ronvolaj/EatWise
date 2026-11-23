@@ -13,6 +13,16 @@ const TIMEOUT_MS = 4000;
 
 const FIELDS = 'code,product_name,product_name_en,product_name_de,generic_name,brands,serving_quantity,nutriments';
 
+// Finds the product barcode in what the scanner read, or returns null when it is not a product code:
+// - a plain barcode with 8-14 digits (EAN-8, EAN-13, UPC, GTIN-14)
+// - a GS1 Digital Link QR code, e.g. https://id.gs1.org/01/04012345678901
+// A 14-digit GTIN that starts with 0 is the same product as the 13-digit EAN without that 0.
+export function productCode(raw) {
+	const text = String(raw ?? '').trim();
+	const digits = /^\d{8,14}$/.test(text) ? text : text.match(/\/01\/(\d{14})(?:\/|\?|$)/)?.[1];
+	if (!digits) return null;
+	return digits.length === 14 && digits.startsWith('0') ? digits.slice(1) : digits;
+}
 // Asks Open Food Facts for one barcode.
 // Returns { food } when the product has all values, { incomplete: true } when it exists but values are missing,
 // { notFound: true } when it is unknown, { error } when Open Food Facts could not be reached.
@@ -40,8 +50,16 @@ export async function lookupBarcode(code) {
 	const data = await response.json();
 	if (data.status !== 1 || !data.product) return { notFound: true };
 
-	const food = toFood(data.product, code);
-	return food ? { food } : { incomplete: true };
+		const food = toFood(data.product, code);
+	if (food) return { food };
+
+	// Known product without nutrition values: name and brand help to add it by hand
+	const p = data.product;
+	return {
+		incomplete: true,
+		name: text(p.product_name || p.product_name_en || p.product_name_de || p.generic_name).slice(0, 100),
+		brand: text(p.brands?.split(',')[0]).slice(0, 100)
+	};
 }
 
 // Turns an Open Food Facts product into the shape createFood() expects (values per 100 g)
