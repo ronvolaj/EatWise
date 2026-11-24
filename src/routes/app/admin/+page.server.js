@@ -1,6 +1,7 @@
 import { fail } from '@sveltejs/kit';
 import { countFoods, deleteUser, flash, listUsers, requireAdmin, setRole } from '../../../lib/server/auth.js';
 import { createFood, deleteBuiltInFood, listBuiltInFoods } from '../../../lib/server/data.js';
+import { m } from '../../../lib/paraglide/messages.js';
 
 // Only admins get here
 export async function load({ cookies }) {
@@ -18,10 +19,10 @@ export const actions = {
 		const form = await request.formData();
 		const id = Number(form.get('id'));
 
-		if (id === admin.id) return fail(400, { error: "You can't change your own role." });
+		if (id === admin.id) return fail(400, { error: m.error_own_role() });
 		const result = await setRole(id, String(form.get('role')));
 		if (result.error) return fail(400, { error: result.error });
-		flash(cookies, 'Role updated');
+		flash(cookies, m.flash_role_updated());
 	},
 
 	delete: async ({ request, cookies }) => {
@@ -29,9 +30,9 @@ export const actions = {
 		const form = await request.formData();
 		const id = Number(form.get('id'));
 
-		if (id === admin.id) return fail(400, { error: "You can't delete your own account here." });
+		if (id === admin.id) return fail(400, { error: m.error_own_delete() });
 		await deleteUser(id);
-		flash(cookies, 'User deleted');
+		flash(cookies, m.flash_user_deleted());
 	},
 
 	// New built-in food: everybody can find it in Search
@@ -58,14 +59,14 @@ export const actions = {
 			sugar: optional('sugar')
 		});
 		if (result.error) return fail(400, { foodError: result.error, values: Object.fromEntries(form) });
-		flash(cookies, `${text('name')} added`);
+		flash(cookies, m.flash_added({ name: text('name') }));
 	},
 
 	// Deletes a built-in food (and the diary entries that use it)
 	deleteFood: async ({ request, cookies }) => {
 		await requireAdmin(cookies);
 		const form = await request.formData();
-		if (!(await deleteBuiltInFood(Number(form.get('id'))))) return fail(404, { error: 'This food does not exist.' });
-		flash(cookies, 'Food deleted');
+		if (!(await deleteBuiltInFood(Number(form.get('id'))))) return fail(404, { error: m.error_food_missing() });
+		flash(cookies, m.flash_food_deleted());
 	}
 };

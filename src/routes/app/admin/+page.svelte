@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import Icon from '../../../lib/components/Icon.svelte';
 	import PageHeader from '../../../lib/components/PageHeader.svelte';
+	import { m } from '../../../lib/paraglide/messages.js';
 
 	// data.users comes from +page.server.js, data.user from +layout.server.js
 	let { data, form } = $props();
@@ -11,12 +12,12 @@
 	let addingFood = $state(false);
 
 	const nutrients = [
-		{ name: 'kcal', label: 'Calories *' },
-		{ name: 'protein', label: 'Protein *' },
-		{ name: 'carbs', label: 'Carbs *' },
-		{ name: 'fat', label: 'Fat *' },
-		{ name: 'fiber', label: 'Fiber' },
-		{ name: 'sugar', label: 'Sugar' }
+		{ name: 'kcal', label: m.common_calories(), required: true },
+		{ name: 'protein', label: m.common_protein(), required: true },
+		{ name: 'carbs', label: m.common_carbs(), required: true },
+		{ name: 'fat', label: m.common_fat(), required: true },
+		{ name: 'fiber', label: m.common_fiber() },
+		{ name: 'sugar', label: m.common_sugar() }
 	];
 	// After an error the server sends the typed values back
 	const old = $derived(form?.values ?? {});
@@ -35,14 +36,14 @@
 
 	function confirmDelete(name) {
 		return ({ cancel }) => {
-			if (!confirm(`Delete ${name} and all of their data?`)) cancel();
+			if (!confirm(m.admin_delete_user_confirm({ name }))) cancel();
 		};
 	}
 
 	function confirmFoodDelete(food) {
 		return ({ cancel }) => {
-			const note = food.uses > 0 ? ` It is also removed from ${food.uses} diary entries.` : '';
-			if (!confirm(`Delete ${food.name}?${note}`)) cancel();
+			const note = food.uses > 0 ? ' ' + m.admin_delete_food_uses({ count: food.uses }) : '';
+			if (!confirm(m.admin_delete_food_confirm({ name: food.name }) + note)) cancel();
 		};
 	}
 
@@ -56,29 +57,29 @@
 </script>
 
 <div class="screen">
-	<PageHeader title="Admin" subtitle="Manage users, roles and foods" back="/app/profile" />
+	<PageHeader title={m.admin_role_admin()} subtitle={m.admin_subtitle()} back="/app/profile" />
 
 	<div class="admin-stats">
-		<div class="card"><small>Users</small><strong>{data.users.length}</strong></div>
-		<div class="card"><small>Foods in database</small><strong>{data.foodCount}</strong></div>
+		<div class="card"><small>{m.admin_users()}</small><strong>{data.users.length}</strong></div>
+		<div class="card"><small>{m.admin_foods_in_db()}</small><strong>{data.foodCount}</strong></div>
 	</div>
 
 	<div class="segmented admin-tabs">
-		<button class:active={tab === 'users'} onclick={() => (tab = 'users')}>Users</button>
-		<button class:active={tab === 'foods'} onclick={() => (tab = 'foods')}>Foods</button>
+		<button class:active={tab === 'users'} onclick={() => (tab = 'users')}>{m.admin_users()}</button>
+		<button class:active={tab === 'foods'} onclick={() => (tab = 'foods')}>{m.admin_foods()}</button>
 	</div>
 
 	<label class="search-box">
 		<Icon name="search" />
-		<input bind:value={query} placeholder={tab === 'users' ? 'Search users' : 'Search foods'} aria-label="Search" />
+		<input bind:value={query} placeholder={tab === 'users' ? m.admin_search_users() : m.search_label()} aria-label={m.common_search()} />
 	</label>
 
 	{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
 
 	{#if tab === 'users'}
 	<div class="list-heading" style="margin-top: 16px">
-		<h2>Users</h2>
-		<span>{filtered.length} shown</span>
+		<h2>{m.admin_users()}</h2>
+		<span>{m.admin_shown({ count: filtered.length })}</span>
 	</div>
 
 	<div class="user-list">
@@ -88,35 +89,35 @@
 				<div>
 					<span class="avatar">{u.username[0]}</span>
 					<div class="who">
-						<strong>{u.username}{self ? ' (you)' : ''}</strong>
-						<small>{u.email} · {u.entries} diary entries</small>
+						<strong>{self ? m.admin_you({ name: u.username }) : u.username}</strong>
+						<small>{u.email} · {m.admin_diary_entries({ count: u.entries })}</small>
 					</div>
-					<span class="role-tag" class:admin={u.role === 'admin'}>{u.role === 'admin' ? 'Admin' : 'User'}</span>
+					<span class="role-tag" class:admin={u.role === 'admin'}>{u.role === 'admin' ? m.admin_role_admin() : m.admin_role_user()}</span>
 				</div>
 				{#if !self}
 					<div class="user-actions">
 						<form method="POST" action="?/role" use:enhance>
 							<input type="hidden" name="id" value={u.id} />
 							<input type="hidden" name="role" value={u.role === 'admin' ? 'user' : 'admin'} />
-							<button class="button secondary">{u.role === 'admin' ? 'Remove admin' : 'Make admin'}</button>
+							<button class="button secondary">{u.role === 'admin' ? m.admin_remove_admin() : m.admin_make_admin()}</button>
 						</form>
 						<form method="POST" action="?/delete" use:enhance={confirmDelete(u.username)}>
 							<input type="hidden" name="id" value={u.id} />
-							<button class="button danger">Delete</button>
+							<button class="button danger">{m.common_delete()}</button>
 						</form>
 					</div>
 				{/if}
 			</div>
 		{:else}
-			<p class="chart-empty">No user matches “{query}”.</p>
+			<p class="chart-empty">{m.admin_no_user({ query })}</p>
 		{/each}
 	</div>
 	{:else}
 	<div class="list-heading" style="margin-top: 16px">
-		<h2>Built-in foods</h2>
-		<span>{filteredFoods.length} shown</span>
+		<h2>{m.admin_builtin()}</h2>
+		<span>{m.admin_shown({ count: filteredFoods.length })}</span>
 	</div>
-	<button class="button secondary add-custom admin-add" onclick={() => (addingFood = true)}><Icon name="plus" /> Add food</button>
+	<button class="button secondary add-custom admin-add" onclick={() => (addingFood = true)}><Icon name="plus" /> {m.common_add_food()}</button>
 
 	<div class="food-list">
 		{#each filteredFoods as f (f.id)}
@@ -125,15 +126,15 @@
 				<div>
 					<strong>{f.name}</strong>
 					<small>{f.brand} · {f.category} · {f.kcal} kcal / 100g</small>
-					<p>Used in <b>{f.uses}</b> diary entries{f.barcode ? ` · Barcode ${f.barcode}` : ''}</p>
+					<p>{m.admin_used_in({ count: f.uses })}{f.barcode ? ` · ${m.common_barcode()} ${f.barcode}` : ''}</p>
 				</div>
 				<form method="POST" action="?/deleteFood" use:enhance={confirmFoodDelete(f)}>
 					<input type="hidden" name="id" value={f.id} />
-					<button class="icon-button" aria-label="Delete {f.name}"><Icon name="trash" /></button>
+					<button class="icon-button" aria-label={m.admin_delete_name({ name: f.name })}><Icon name="trash" /></button>
 				</form>
 			</div>
 		{:else}
-			<p class="chart-empty">No food matches “{query}”.</p>
+			<p class="chart-empty">{m.admin_no_food({ query })}</p>
 		{/each}
 	</div>
 	{/if}
@@ -143,25 +144,25 @@
 		<div class="modal-backdrop" onclick={(e) => e.target === e.currentTarget && (addingFood = false)}>
 			<form class="card edit-modal admin-food-form" method="POST" action="?/addFood" use:enhance={closeAfter}>
 				<div class="modal-title">
-					<div><div><h2>Add a built-in food</h2><p>Nutrition values per 100 grams · visible for everybody</p></div></div>
-					<button type="button" class="icon-button" aria-label="Close" onclick={() => (addingFood = false)}><Icon name="close" /></button>
+					<div><div><h2>{m.admin_add_builtin()}</h2><p>{m.admin_add_note()}</p></div></div>
+					<button type="button" class="icon-button" aria-label={m.common_close()} onclick={() => (addingFood = false)}><Icon name="close" /></button>
 				</div>
 				<div class="nutrient-inputs">
-					<label class="field"><span>Name *</span><input name="name" required value={old.name ?? ''} /></label>
-					<label class="field"><span>Brand</span><input name="brand" placeholder="Optional" value={old.brand ?? ''} /></label>
-					<label class="field"><span>Icon (emoji)</span><input name="icon" placeholder="🥘" value={old.icon ?? ''} /></label>
-					<label class="field"><span>Category</span><input name="category" placeholder="e.g. Snacks" value={old.category ?? ''} /></label>
-					<label class="field"><span>Barcode</span><input name="barcode" inputmode="numeric" placeholder="Optional" value={old.barcode ?? ''} /></label>
-					<label class="field"><span>Serving (g) *</span><input name="serving" type="number" min="1" step="any" required value={old.serving ?? '100'} /></label>
+					<label class="field"><span>{m.admin_name()}</span><input name="name" required value={old.name ?? ''} /></label>
+					<label class="field"><span>{m.common_brand()}</span><input name="brand" placeholder={m.common_optional()} value={old.brand ?? ''} /></label>
+					<label class="field"><span>{m.admin_icon()}</span><input name="icon" placeholder="🥘" value={old.icon ?? ''} /></label>
+					<label class="field"><span>{m.admin_category()}</span><input name="category" placeholder={m.admin_category_placeholder()} value={old.category ?? ''} /></label>
+					<label class="field"><span>{m.common_barcode()}</span><input name="barcode" inputmode="numeric" placeholder={m.common_optional()} value={old.barcode ?? ''} /></label>
+					<label class="field"><span>{m.admin_serving()}</span><input name="serving" type="number" min="1" step="any" required value={old.serving ?? '100'} /></label>
 					{#each nutrients as n}
 						<label class="field">
-							<span>{n.label}</span>
-							<input name={n.name} type="number" min="0" step="any" placeholder="0" required={n.label.endsWith('*')} value={old[n.name] ?? ''} />
+							<span>{n.label}{n.required ? ' *' : ''}</span>
+							<input name={n.name} type="number" min="0" step="any" placeholder="0" required={n.required} value={old[n.name] ?? ''} />
 						</label>
 					{/each}
 				</div>
 				{#if form?.foodError}<p class="form-error" role="alert">{form.foodError}</p>{/if}
-				<button class="button primary">Save food</button>
+				<button class="button primary">{m.common_save_food()}</button>
 			</form>
 		</div>
 	{/if}
