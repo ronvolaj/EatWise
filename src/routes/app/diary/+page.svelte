@@ -4,6 +4,7 @@
 	import PageHeader from '../../../lib/components/PageHeader.svelte';
 	import Ring from '../../../lib/components/Ring.svelte';
 	import { MEALS, longDate, round, sumEntries } from '../../../lib/nutrition.js';
+	import { m } from '../../../lib/paraglide/messages.js';
 
 	let { data, form } = $props();
 
@@ -16,7 +17,7 @@
 	const isToday = $derived(data.date === data.today);
 
 	const daysAgo = $derived(Math.round((new Date(data.today) - new Date(data.date)) / 86400000));
-	const dayLabel = $derived(daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo} days ago`);
+	const dayLabel = $derived(daysAgo === 0 ? m.common_today() : daysAgo === 1 ? m.diary_yesterday() : m.diary_days_ago({ count: daysAgo }));
 
 	// Close the edit window after saving
 	function closeAfter() {
@@ -30,15 +31,15 @@
 </script>
 
 <div class="screen diary-screen">
-	<PageHeader title="Food diary" subtitle="Track every meal, see your progress" />
+	<PageHeader title={m.diary_title()} subtitle={m.diary_subtitle()} />
 
 	<div class="date-selector">
-		<a class="icon-button" href="/app/diary?date={data.previous}" aria-label="Previous day"><Icon name="back" /></a>
+		<a class="icon-button" href="/app/diary?date={data.previous}" aria-label={m.diary_previous()}><Icon name="back" /></a>
 		<a href="/app/diary">
 			<strong>{dayLabel}</strong>
 			<small>{longDate(data.date, { month: 'long', day: 'numeric', year: 'numeric' })}</small>
 		</a>
-		<a class="icon-button" class:disabled={isToday} href="/app/diary?date={data.next}" aria-label="Next day" aria-disabled={isToday}>
+		<a class="icon-button" class:disabled={isToday} href="/app/diary?date={data.next}" aria-label={m.diary_next()} aria-disabled={isToday}>
 			<Icon name="next" />
 		</a>
 	</div>
@@ -48,12 +49,12 @@
 			<Ring value={totals.kcal} max={user.kcal_target} size={74} color="orange">
 				<strong>{round(totals.kcal)}</strong><small>kcal</small>
 			</Ring>
-			<p><strong>{Math.max(0, round(user.kcal_target - totals.kcal))}</strong><span>remaining</span></p>
+			<p><strong>{Math.max(0, round(user.kcal_target - totals.kcal))}</strong><span>{m.common_remaining()}</span></p>
 		</div>
 		<div class="totals-macros">
-			<span><i class="blue"></i> P <b>{round(totals.protein)}g</b></span>
-			<span><i class="amber"></i> C <b>{round(totals.carbs)}g</b></span>
-			<span><i class="purple"></i> F <b>{round(totals.fat)}g</b></span>
+			<span><i class="blue"></i> {m.common_p()} <b>{round(totals.protein)}g</b></span>
+			<span><i class="amber"></i> {m.common_c()} <b>{round(totals.carbs)}g</b></span>
+			<span><i class="purple"></i> {m.common_f()} <b>{round(totals.fat)}g</b></span>
 		</div>
 	</div>
 
@@ -66,7 +67,7 @@
 					<h2>{meal.label}</h2>
 					<small>{round(sumEntries(list).kcal)} kcal</small>
 				</div>
-				<a class="icon-button" href="/app/search?meal={meal.id}&date={data.date}" aria-label="Add {meal.label}"><Icon name="plus" /></a>
+				<a class="icon-button" href="/app/search?meal={meal.id}&date={data.date}" aria-label={m.common_add_item({ item: meal.label })}><Icon name="plus" /></a>
 			</div>
 
 			{#each list as e (e.id)}
@@ -74,15 +75,15 @@
 					<span>{e.icon}</span>
 					<div>
 						<strong>{e.name}</strong>
-						<small>{e.quantity}g · P {round(e.protein)}g · C {round(e.carbs)}g · F {round(e.fat)}g</small>
+						<small>{e.quantity}g · {m.common_p()} {round(e.protein)}g · {m.common_c()} {round(e.carbs)}g · {m.common_f()} {round(e.fat)}g</small>
 					</div>
 					<b>{round(e.kcal)}<small> kcal</small></b>
 					<Icon name="more" size={18} />
 				</button>
 			{:else}
 				<div class="meal-empty">
-					<span>No {meal.label.toLowerCase()} logged</span>
-					<a href="/app/search?meal={meal.id}&date={data.date}">Add food</a>
+					<span>{m.diary_meal_empty()}</span>
+					<a href="/app/search?meal={meal.id}&date={data.date}">{m.common_add_food()}</a>
 				</div>
 			{/each}
 		</section>
@@ -95,24 +96,24 @@
 				<div class="modal-title">
 					<div>
 						<span>{editing.icon}</span>
-						<div><h2>{editing.name}</h2><p>Edit diary entry</p></div>
+						<div><h2>{editing.name}</h2><p>{m.diary_edit_entry()}</p></div>
 					</div>
-					<button type="button" class="icon-button" aria-label="Close" onclick={() => (editing = null)}><Icon name="close" /></button>
+					<button type="button" class="icon-button" aria-label={m.common_close()} onclick={() => (editing = null)}><Icon name="close" /></button>
 				</div>
 				<input type="hidden" name="id" value={editing.id} />
 				<label class="field">
-					<span>Quantity (g)</span>
+					<span>{m.common_quantity_g()}</span>
 					<input name="quantity" type="number" min="1" step="any" required bind:value={editing.quantity} />
 				</label>
 				<label class="field">
-					<span>Move to meal</span>
+					<span>{m.diary_move_meal()}</span>
 					<select name="meal" bind:value={editing.meal}>
 						{#each MEALS as meal}<option value={meal.id}>{meal.label}</option>{/each}
 					</select>
 				</label>
 				{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
-				<button class="button primary" disabled={saving}>Save changes</button>
-				<button class="button danger" formaction="?/remove" formnovalidate disabled={saving}><Icon name="trash" /> Remove entry</button>
+				<button class="button primary" disabled={saving}>{m.diary_save()}</button>
+				<button class="button danger" formaction="?/remove" formnovalidate disabled={saving}><Icon name="trash" /> {m.diary_remove()}</button>
 			</form>
 		</div>
 	{/if}
