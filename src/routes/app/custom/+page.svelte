@@ -23,7 +23,12 @@
 	<div class="form-stack">
 		<label class="field">
 			<span>{m.custom_name()}</span>
-			<input name="name" placeholder={m.custom_name_placeholder()} required value={old.name ?? data.name} />
+			<input
+				name="name"
+				placeholder={m.custom_name_placeholder()}
+				required
+				value={old.name ?? data.name}
+			/>
 		</label>
 		<label class="field">
 			<span>{m.common_brand()}</span>
@@ -31,17 +36,37 @@
 		</label>
 		<label class="field">
 			<span>{m.common_barcode()}</span>
-			<input name="barcode" inputmode="numeric" placeholder={m.common_optional()} value={old.barcode ?? data.barcode} />
+			<input
+				name="barcode"
+				inputmode="numeric"
+				placeholder={m.common_optional()}
+				value={old.barcode ?? data.barcode}
+			/>
 		</label>
 		<label class="field">
 			<span>{m.custom_serving()}</span>
-			<input name="serving" type="number" min="1" step="any" required value={old.serving ?? '100'} />
+			<input
+				name="serving"
+				type="number"
+				min="1"
+				step="any"
+				required
+				value={old.serving ?? '100'}
+			/>
 		</label>
 		<div class="nutrient-inputs">
 			{#each nutrients as n}
 				<label class="field">
 					<span>{n.label}{n.required ? ' *' : ''}</span>
-					<input name={n.name} type="number" min="0" step="any" placeholder="0" required={n.required} value={old[n.name] ?? ''} />
+					<input
+						name={n.name}
+						type="number"
+						min="0"
+						step="any"
+						placeholder="0"
+						required={n.required}
+						value={old[n.name] ?? ''}
+					/>
 				</label>
 			{/each}
 		</div>

@@ -23,6 +23,8 @@ export async function POST({ request }) {
 
 	const date = cleanDate(body.date == null ? null : String(body.date));
 	const source = body.source === 'barcode' ? 'barcode' : 'search';
-	check(await addEntry(user.id, food.id, date, String(body.meal ?? ''), Number(body.quantity), source));
+	check(
+		await addEntry(user.id, food.id, date, String(body.meal ?? ''), Number(body.quantity), source)
+	);
 	return json(await diaryDay(user.id, date), { status: 201 });
 }

@@ -1,5 +1,12 @@
 import { fail } from '@sveltejs/kit';
-import { countFoods, deleteUser, flash, listUsers, requireAdmin, setRole } from '../../../lib/server/auth.js';
+import {
+	countFoods,
+	deleteUser,
+	flash,
+	listUsers,
+	requireAdmin,
+	setRole
+} from '../../../lib/server/auth.js';
 import { createFood, deleteBuiltInFood, listBuiltInFoods } from '../../../lib/server/data.js';
 import { m } from '../../../lib/paraglide/messages.js';
 
@@ -58,7 +65,8 @@ export const actions = {
 			fiber: optional('fiber'),
 			sugar: optional('sugar')
 		});
-		if (result.error) return fail(400, { foodError: result.error, values: Object.fromEntries(form) });
+		if (result.error)
+			return fail(400, { foodError: result.error, values: Object.fromEntries(form) });
 		flash(cookies, m.flash_added({ name: text('name') }));
 	},
 
@@ -66,7 +74,8 @@ export const actions = {
 	deleteFood: async ({ request, cookies }) => {
 		await requireAdmin(cookies);
 		const form = await request.formData();
-		if (!(await deleteBuiltInFood(Number(form.get('id'))))) return fail(404, { error: m.error_food_missing() });
+		if (!(await deleteBuiltInFood(Number(form.get('id')))))
+			return fail(404, { error: m.error_food_missing() });
 		flash(cookies, m.flash_food_deleted());
 	}
 };

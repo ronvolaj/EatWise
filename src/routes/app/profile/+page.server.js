@@ -1,6 +1,12 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { deleteUser, flash, logout, requireUser } from '../../../lib/server/auth.js';
-import { listWeights, logWeight, toggleSetting, updateProfile, updateTargets } from '../../../lib/server/data.js';
+import {
+	listWeights,
+	logWeight,
+	toggleSetting,
+	updateProfile,
+	updateTargets
+} from '../../../lib/server/data.js';
 import { m } from '../../../lib/paraglide/messages.js';
 
 export async function load({ cookies }) {

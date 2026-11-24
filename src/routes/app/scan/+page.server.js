@@ -1,6 +1,12 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { flash, requireUser } from '../../../lib/server/auth.js';
-import { addEntry, createFood, findByBarcode, findByName, today } from '../../../lib/server/data.js';
+import {
+	addEntry,
+	createFood,
+	findByBarcode,
+	findByName,
+	today
+} from '../../../lib/server/data.js';
 import { lookupBarcode, productCode } from '../../../lib/server/openfoodfacts.js';
 import { SAMPLE_BARCODE } from '../../../lib/server/db.js';
 import { mealLabel } from '../../../lib/nutrition.js';

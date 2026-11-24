@@ -14,7 +14,11 @@
 
 	const scaled = (value) => round((value * quantity) / 100);
 	const back = $derived(
-		data.from === 'home' ? '/app/homepage' : data.from === 'scan' ? '/app/scan' : `/app/search?meal=${data.meal}&date=${data.date}`
+		data.from === 'home'
+			? '/app/homepage'
+			: data.from === 'scan'
+				? '/app/scan'
+				: `/app/search?meal=${data.meal}&date=${data.date}`
 	);
 	const servings = $derived([
 		{ label: m.food_half(), grams: food.serving / 2 },
@@ -48,7 +52,7 @@
 		<span>{food.icon}</span>
 		<h1>{food.name}</h1>
 		<p>{food.brand}</p>
-				{#if food.category === 'Scanned'}
+		{#if food.category === 'Scanned'}
 			<!-- Required by the Open Food Facts license (ODbL) -->
 			<small class="data-source">{m.food_source()}</small>
 		{/if}
@@ -64,16 +68,37 @@
 	<div class="form-section">
 		<h2>{m.food_serving()}</h2>
 		<div class="quantity-control">
-			<button type="button" class="icon-button" aria-label={m.food_decrease()} onclick={() => (quantity = Math.max(1, quantity - 10))}><Icon name="minus" /></button>
+			<button
+				type="button"
+				class="icon-button"
+				aria-label={m.food_decrease()}
+				onclick={() => (quantity = Math.max(1, quantity - 10))}><Icon name="minus" /></button
+			>
 			<div>
-				<input type="number" name="quantity" min="1" step="any" aria-label={m.food_quantity_label()} bind:value={quantity} />
+				<input
+					type="number"
+					name="quantity"
+					min="1"
+					step="any"
+					aria-label={m.food_quantity_label()}
+					bind:value={quantity}
+				/>
 				<span>{m.food_grams()}</span>
 			</div>
-			<button type="button" class="icon-button" aria-label={m.food_increase()} onclick={() => (quantity = quantity + 10)}><Icon name="plus" /></button>
+			<button
+				type="button"
+				class="icon-button"
+				aria-label={m.food_increase()}
+				onclick={() => (quantity = quantity + 10)}><Icon name="plus" /></button
+			>
 		</div>
 		<div class="serving-chips">
 			{#each servings as s}
-				<button type="button" class:active={quantity === s.grams} onclick={() => (quantity = s.grams)}>{s.label}</button>
+				<button
+					type="button"
+					class:active={quantity === s.grams}
+					onclick={() => (quantity = s.grams)}>{s.label}</button
+				>
 			{/each}
 		</div>
 	</div>
@@ -95,10 +120,13 @@
 	{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
 
 	<button class="button primary sticky-action" disabled={saving || !(quantity > 0)}>
-		<Icon name="plus" /> {m.food_add_to_diary({ kcal: scaled(food.kcal) })}
+		<Icon name="plus" />
+		{m.food_add_to_diary({ kcal: scaled(food.kcal) })}
 	</button>
 
 	{#if data.isOwn}
-		<button class="button danger delete-food" formaction="?/delete" formnovalidate><Icon name="trash" /> {m.food_delete()}</button>
+		<button class="button danger delete-food" formaction="?/delete" formnovalidate
+			><Icon name="trash" /> {m.food_delete()}</button
+		>
 	{/if}
 </form>

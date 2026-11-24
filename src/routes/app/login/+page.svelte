@@ -16,15 +16,30 @@
 
 	<label class="field">
 		<span>{m.common_email()}</span>
-		<input name="email" type="email" autocomplete="email" placeholder="alex@example.com" required value={form?.email ?? ''} />
+		<input
+			name="email"
+			type="email"
+			autocomplete="email"
+			placeholder="alex@example.com"
+			required
+			value={form?.email ?? ''}
+		/>
 	</label>
 	<label class="field">
 		<span>{m.common_password()}</span>
-		<input name="password" type="password" autocomplete="current-password" placeholder={m.login_password_placeholder()} required />
+		<input
+			name="password"
+			type="password"
+			autocomplete="current-password"
+			placeholder={m.login_password_placeholder()}
+			required
+		/>
 	</label>
 
 	{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
 
 	<button class="button primary">{m.common_sign_in()}</button>
-	<a class="text-link" href="/app/register">{m.login_new_here()} <strong>{m.login_create_account()}</strong></a>
+	<a class="text-link" href="/app/register"
+		>{m.login_new_here()} <strong>{m.login_create_account()}</strong></a
+	>
 </form>

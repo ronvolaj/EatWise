@@ -3,7 +3,14 @@
 	import Icon from '../../../lib/components/Icon.svelte';
 	import Ring from '../../../lib/components/Ring.svelte';
 	import MacroRow from '../../../lib/components/MacroRow.svelte';
-	import { MEALS, longDate, num, round, sumEntries, weekdayLetter } from '../../../lib/nutrition.js';
+	import {
+		MEALS,
+		longDate,
+		num,
+		round,
+		sumEntries,
+		weekdayLetter
+	} from '../../../lib/nutrition.js';
 	import { m } from '../../../lib/paraglide/messages.js';
 
 	// data.user comes from +layout.server.js, the rest from +page.server.js
@@ -70,8 +77,18 @@
 			<h2>{m.home_todays_macros()}</h2>
 			<a href="/app/diary">{m.home_view_diary()} <Icon name="next" size={16} /></a>
 		</div>
-		<MacroRow label={m.common_protein()} color="blue" value={totals.protein} max={user.protein_target_g} />
-		<MacroRow label={m.common_carbs()} color="amber" value={totals.carbs} max={user.carbs_target_g} />
+		<MacroRow
+			label={m.common_protein()}
+			color="blue"
+			value={totals.protein}
+			max={user.protein_target_g}
+		/>
+		<MacroRow
+			label={m.common_carbs()}
+			color="amber"
+			value={totals.carbs}
+			max={user.carbs_target_g}
+		/>
 		<MacroRow label={m.common_fat()} color="purple" value={totals.fat} max={user.fat_target_g} />
 	</div>
 
@@ -137,9 +154,7 @@
 			<span class="eyebrow">{m.home_weekly()}</span>
 			<h2>{m.home_days_on_track({ count: onTrackDays })}</h2>
 			<p>
-				{onTrackDays >= 4
-					? m.home_routine()
-					: m.home_log_every_day()}
+				{onTrackDays >= 4 ? m.home_routine() : m.home_log_every_day()}
 			</p>
 		</div>
 		<div class="mini-bars">
@@ -155,7 +170,11 @@
 
 	{#if quickOpen}
 		<!-- Tapping anywhere outside the menu closes it -->
-		<button class="quick-backdrop" aria-label={m.home_close_menu()} onclick={() => (quickOpen = false)}></button>
+		<button
+			class="quick-backdrop"
+			aria-label={m.home_close_menu()}
+			onclick={() => (quickOpen = false)}
+		></button>
 		<div class="quick-menu">
 			<a href="/app/search?from=home"><Icon name="search" />{m.common_add_food()}</a>
 			<a href="/app/scan"><Icon name="barcode" />{m.home_scan_barcode()}</a>

@@ -2,7 +2,14 @@
 	import MacroBadge from '../../../lib/components/MacroBadge.svelte';
 	import MacroRow from '../../../lib/components/MacroRow.svelte';
 	import PageHeader from '../../../lib/components/PageHeader.svelte';
-	import { formatWeight, longDate, num, round, sumEntries, weekdayLetter } from '../../../lib/nutrition.js';
+	import {
+		formatWeight,
+		longDate,
+		num,
+		round,
+		sumEntries,
+		weekdayLetter
+	} from '../../../lib/nutrition.js';
 	import { m } from '../../../lib/paraglide/messages.js';
 
 	let { data } = $props();
@@ -22,7 +29,7 @@
 	const shown = $derived(
 		range === 'Day' ? data.days.slice(-1) : range === 'Week' ? data.days.slice(-7) : data.days
 	);
-	const logged = $derived(shown.filter((d) => d.kcal > 0));
+	const logged = $derived(shown.filter((d) => d.entries > 0)); // days with at least one entry
 	const average = $derived(
 		logged.length ? round(logged.reduce((sum, d) => sum + d.kcal, 0) / logged.length) : 0
 	);
@@ -50,11 +57,21 @@
 		return weekdayLetter(day.date);
 	}
 
-	// ----- Macro donut: share of today's calories (protein and carbs 4 kcal/g, fat 9 kcal/g) -----
+	// ----- Macros of the chosen range -----
+	// Day: today's totals. Week/Month: average per day, counting only days with entries
+	// (an empty day would pull the average down although nothing was eaten that was not logged).
+	const macros = $derived.by(() => {
+		if (range === 'Day') return totals;
+		const n = logged.length || 1;
+		const sum = (key) => logged.reduce((total, d) => total + d[key], 0) / n;
+		return { kcal: sum('kcal'), protein: sum('protein'), carbs: sum('carbs'), fat: sum('fat') };
+	});
+
+	// ----- Macro donut: share of the calories (protein and carbs 4 kcal/g, fat 9 kcal/g) -----
 	const macroKcal = $derived({
-		protein: totals.protein * 4,
-		carbs: totals.carbs * 4,
-		fat: totals.fat * 9
+		protein: macros.protein * 4,
+		carbs: macros.carbs * 4,
+		fat: macros.fat * 9
 	});
 	const macroSum = $derived(macroKcal.protein + macroKcal.carbs + macroKcal.fat);
 	const share = $derived({
@@ -126,7 +143,9 @@
 			</div>
 		{:else}
 			<p class="chart-empty">
-				{range === 'Day' ? m.stats_empty_today() : m.stats_empty_days({ days: range === 'Week' ? 7 : 30 })}
+				{range === 'Day'
+					? m.stats_empty_today()
+					: m.stats_empty_days({ days: range === 'Week' ? 7 : 30 })}
 				<a href="/app/search">{m.stats_log_first()}</a>
 				{m.stats_to_see()}
 			</p>
@@ -134,19 +153,27 @@
 	</div>
 
 	<div class="card">
-		<span class="eyebrow">{m.stats_macro_today()}</span>
+		<span class="eyebrow">{range === 'Day' ? m.stats_macro_today() : m.stats_macro_avg()}</span>
 		<div class="donut-layout">
 			<div class="donut" style="background: {donut}">
-				<div><strong>{num(round(totals.kcal))}</strong><small>kcal</small></div>
+				<div><strong>{num(round(macros.kcal))}</strong><small>kcal</small></div>
 			</div>
 			<div class="donut-legend">
 				<MacroBadge
 					color="blue"
 					label="{m.common_protein()} · {share.protein}%"
-					value="{round(totals.protein)}g"
+					value="{round(macros.protein)}g"
 				/>
-				<MacroBadge color="amber" label="{m.common_carbs()} · {share.carbs}%" value="{round(totals.carbs)}g" />
-				<MacroBadge color="purple" label="{m.common_fat()} · {share.fat}%" value="{round(totals.fat)}g" />
+				<MacroBadge
+					color="amber"
+					label="{m.common_carbs()} · {share.carbs}%"
+					value="{round(macros.carbs)}g"
+				/>
+				<MacroBadge
+					color="purple"
+					label="{m.common_fat()} · {share.fat}%"
+					value="{round(macros.fat)}g"
+				/>
 			</div>
 		</div>
 	</div>
@@ -154,10 +181,27 @@
 	<div class="card">
 		<div class="card-title">
 			<h2>{m.stats_goal_vs_actual()}</h2>
-			<span>{m.common_today()}</span>
+						<span>{range === 'Day' ? m.common_today() : m.stats_avg_per_day()}</span>
 		</div>
-		<MacroRow label={m.common_protein()} color="blue" value={totals.protein} max={user.protein_target_g} />
-		<MacroRow label={m.common_carbs()} color="amber" value={totals.carbs} max={user.carbs_target_g} />
+		<MacroRow label={m.common_protein()} color="blue" value={macros.protein} max={user.protein_target_g} />
+		<MacroRow label={m.common_carbs()} color="amber" value={macros.carbs} max={user.carbs_target_g} />
+		<MacroRow label={m.common_fat()} color="purple" value={macros.fat} max={user.fat_target_g} />
+		{#if range !== 'Day' && logged.length}
+			<p class="stats-note">{m.stats_days_logged({ count: logged.length, total: shown.length })}</p>
+		{/if}
+		</div>
+		<MacroRow
+			label={m.common_protein()}
+			color="blue"
+			value={totals.protein}
+			max={user.protein_target_g}
+		/>
+		<MacroRow
+			label={m.common_carbs()}
+			color="amber"
+			value={totals.carbs}
+			max={user.carbs_target_g}
+		/>
 		<MacroRow label={m.common_fat()} color="purple" value={totals.fat} max={user.fat_target_g} />
 	</div>
 

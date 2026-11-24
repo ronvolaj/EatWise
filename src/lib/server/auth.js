@@ -106,7 +106,8 @@ export async function register(cookies, input) {
 	if (input.password !== input.confirm) return { error: m.auth_error_password_match() };
 	if (!['lose', 'maintain', 'gain'].includes(input.goal)) return { error: m.auth_error_goal() };
 	if (!['male', 'female'].includes(input.sex)) return { error: m.auth_error_sex() };
-	if (!['low', 'medium', 'high'].includes(input.activity)) return { error: m.auth_error_activity() };
+	if (!['low', 'medium', 'high'].includes(input.activity))
+		return { error: m.auth_error_activity() };
 	if (!(height >= 80 && height <= 260)) return { error: m.auth_error_height() };
 	if (!(weight >= 30 && weight <= 400)) return { error: m.auth_error_weight() };
 	if (!(target >= 30 && target <= 400)) return { error: m.auth_error_target() };
@@ -141,13 +142,24 @@ export async function register(cookies, input) {
 			`INSERT INTO profiles (user_id, sex, birth_date, height_cm, goal, activity, target_weight_kg,
 			                       kcal_target, protein_target_g, carbs_target_g, fat_target_g)
 			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			[userId, input.sex, input.birth, height, input.goal, input.activity, target, plan.kcal, plan.protein, plan.carbs, plan.fat]
+			[
+				userId,
+				input.sex,
+				input.birth,
+				height,
+				input.goal,
+				input.activity,
+				target,
+				plan.kcal,
+				plan.protein,
+				plan.carbs,
+				plan.fat
+			]
 		);
-		await connection.query('INSERT INTO weight_entries (user_id, weight_kg, logged_on) VALUES (?, ?, ?)', [
-			userId,
-			weight,
-			today()
-		]);
+		await connection.query(
+			'INSERT INTO weight_entries (user_id, weight_kg, logged_on) VALUES (?, ?, ?)',
+			[userId, weight, today()]
+		);
 		await connection.commit();
 	} catch (error) {
 		await connection.rollback();
@@ -164,7 +176,7 @@ export async function register(cookies, input) {
 export async function login(cookies, email, password) {
 	const user = await queryOne('SELECT id, password_hash FROM users WHERE email = ?', [email]);
 	if (!user || !checkPassword(password, user.password_hash)) {
-				return { error: m.auth_error_login() };
+		return { error: m.auth_error_login() };
 	}
 	await createSession(cookies, user.id);
 	return {};

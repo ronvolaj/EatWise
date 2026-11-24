@@ -1,6 +1,6 @@
 <script>
 	import { enhance } from '$app/forms';
-		import { goto } from '$app/navigation';
+	import { goto } from '$app/navigation';
 	import Icon from '../../../lib/components/Icon.svelte';
 	import { cameraErrorMessage, capturePhoto, openCamera } from '../../../lib/camera.js';
 	import { scanBarcode } from '../../../lib/barcode.js';
@@ -44,7 +44,8 @@
 
 	// The camera is on while scanning a barcode or before a photo is taken
 	const cameraOn = $derived(
-		(data.mode === 'barcode' && !data.notFound && !scanning) || (data.mode === 'photo' && status === 'ready')
+		(data.mode === 'barcode' && !data.notFound && !scanning) ||
+			(data.mode === 'photo' && status === 'ready')
 	);
 
 	// Switching the mode resets the photo flow
@@ -63,7 +64,8 @@
 
 		openCamera(video)
 			.then((stop) => {
-				if (stopped) stop(); // page was left before the camera was ready
+				if (stopped)
+					stop(); // page was left before the camera was ready
 				else stopCamera = stop;
 			})
 			.catch((error) => {
@@ -106,7 +108,9 @@
 		<h1>{m.scan_title()}</h1>
 		<p>{m.scan_subtitle()}</p>
 		<div class="scan-switch">
-			<a href="/app/scan" class:active={data.mode === 'barcode'}><Icon name="barcode" />{m.common_barcode()}</a>
+			<a href="/app/scan" class:active={data.mode === 'barcode'}
+				><Icon name="barcode" />{m.common_barcode()}</a
+			>
 			<a href="/app/scan?mode=photo" class:active={data.mode === 'photo'}
 				><Icon name="camera" />{m.scan_photo_tab()}</a
 			>
@@ -128,7 +132,7 @@
 
 		{#if data.mode === 'barcode'}
 			{#if data.notFound}
-								<div class="scan-result overlay-card">
+				<div class="scan-result overlay-card">
 					<span>?</span>
 					{#if data.offStatus === 'not-product'}
 						<!-- e.g. a QR code with a website or text instead of a product barcode -->
@@ -138,7 +142,9 @@
 					{:else if data.offStatus === 'error'}
 						<h2>{m.scan_no_connection()}</h2>
 						<p>{m.scan_no_connection_text()}</p>
-						<a class="button primary" href="/app/scan?code={encodeURIComponent(data.notFound)}">{m.common_try_again_button()}</a>
+						<a class="button primary" href="/app/scan?code={encodeURIComponent(data.notFound)}"
+							>{m.common_try_again_button()}</a
+						>
 						<a class="button ghost" href="/app/custom?barcode={encodeURIComponent(data.barcode)}"
 							>{m.scan_add_manually()}</a
 						>
@@ -146,7 +152,9 @@
 						<h2>{m.scan_not_found()}</h2>
 						{#if data.offStatus === 'incomplete'}
 							<p>
-								{m.scan_incomplete({ name: data.offProduct?.name || m.scan_barcode_name({ code: data.barcode }) })}
+								{m.scan_incomplete({
+									name: data.offProduct?.name || m.scan_barcode_name({ code: data.barcode })
+								})}
 							</p>
 						{:else}
 							<p>{m.scan_unknown({ code: data.barcode })}</p>
@@ -201,7 +209,14 @@
 					</div>
 					<label class="field">
 						<span>{m.common_quantity_g()}</span>
-						<input name="quantity" type="number" min="1" step="any" required bind:value={quantity} />
+						<input
+							name="quantity"
+							type="number"
+							min="1"
+							step="any"
+							required
+							bind:value={quantity}
+						/>
 					</label>
 					<label class="field">
 						<span>{m.common_add_to_meal()}</span>
@@ -221,7 +236,7 @@
 
 	{#if data.mode === 'barcode' && !data.notFound}
 		<div class="camera-controls barcode">
-						<button class="button primary scan-button" onclick={startScan} disabled={scanning}>
+			<button class="button primary scan-button" onclick={startScan} disabled={scanning}>
 				<Icon name="barcode" />
 				{scanning ? m.scan_scanning() : m.home_scan_barcode()}
 			</button>

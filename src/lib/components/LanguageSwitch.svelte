@@ -13,7 +13,12 @@
 
 <div class="lang-switch" role="group" aria-label={m.lang_switch_label()}>
 	{#each languages as language}
-		<button type="button" class:active={current === language.code} aria-pressed={current === language.code} onclick={() => setLocale(language.code)}>
+		<button
+			type="button"
+			class:active={current === language.code}
+			aria-pressed={current === language.code}
+			onclick={() => setLocale(language.code)}
+		>
 			{language.label}
 		</button>
 	{/each}

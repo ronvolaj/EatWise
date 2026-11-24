@@ -5,21 +5,57 @@ import { getLocale } from './paraglide/runtime.js';
 // The labels are getters: they are read when they are shown,
 // so they are always in the user's current language
 export const MEALS = [
-	{ id: 'breakfast', icon: '🍳', get label() { return m.meal_breakfast(); } },
-	{ id: 'lunch', icon: '🥗', get label() { return m.meal_lunch(); } },
-	{ id: 'dinner', icon: '🍲', get label() { return m.meal_dinner(); } },
-	{ id: 'snack', icon: '🍓', get label() { return m.meal_snack(); } }
+	{
+		id: 'breakfast',
+		icon: '🍳',
+		get label() {
+			return m.meal_breakfast();
+		}
+	},
+	{
+		id: 'lunch',
+		icon: '🥗',
+		get label() {
+			return m.meal_lunch();
+		}
+	},
+	{
+		id: 'dinner',
+		icon: '🍲',
+		get label() {
+			return m.meal_dinner();
+		}
+	},
+	{
+		id: 'snack',
+		icon: '🍓',
+		get label() {
+			return m.meal_snack();
+		}
+	}
 ];
 
 export const GOALS = {
-	get lose() { return m.goal_lose(); },
-	get maintain() { return m.goal_maintain(); },
-	get gain() { return m.goal_gain(); }
+	get lose() {
+		return m.goal_lose();
+	},
+	get maintain() {
+		return m.goal_maintain();
+	},
+	get gain() {
+		return m.goal_gain();
+	}
 };
 export const ACTIVITIES = {
-	get low() { return m.activity_low(); },
-	get medium() { return m.activity_medium(); },
-	get high() { return m.activity_high(); }
+	get low() {
+		return m.activity_low();
+	},
+	get medium() {
+		return m.activity_medium();
+	},
+	get high() {
+		return m.activity_high();
+	}
 };
 
 // Number with the separators of the current language (1,850 / 1.850)
@@ -89,8 +125,34 @@ export function formatHeight(cm, units) {
 // so the app formats Albanian dates itself (same result on the server and in the browser).
 const SQ_DAYS = ['e diel', 'e hënë', 'e martë', 'e mërkurë', 'e enjte', 'e premte', 'e shtunë'];
 const SQ_DAY_LETTERS = ['D', 'H', 'M', 'M', 'E', 'P', 'Sh'];
-const SQ_MONTHS = ['janar', 'shkurt', 'mars', 'prill', 'maj', 'qershor', 'korrik', 'gusht', 'shtator', 'tetor', 'nëntor', 'dhjetor'];
-const SQ_MONTHS_SHORT = ['jan', 'shk', 'mar', 'pri', 'maj', 'qer', 'korr', 'gush', 'sht', 'tet', 'nën', 'dhj'];
+const SQ_MONTHS = [
+	'janar',
+	'shkurt',
+	'mars',
+	'prill',
+	'maj',
+	'qershor',
+	'korrik',
+	'gusht',
+	'shtator',
+	'tetor',
+	'nëntor',
+	'dhjetor'
+];
+const SQ_MONTHS_SHORT = [
+	'jan',
+	'shk',
+	'mar',
+	'pri',
+	'maj',
+	'qer',
+	'korr',
+	'gush',
+	'sht',
+	'tet',
+	'nën',
+	'dhj'
+];
 
 function albanianDate(d, options) {
 	const month = options.month === 'short' ? SQ_MONTHS_SHORT[d.getMonth()] : SQ_MONTHS[d.getMonth()];

@@ -5,8 +5,11 @@ import { m } from './paraglide/messages.js';
 
 // Opens the scanner and returns { code, format }, or null when the user cancels.
 export async function scanBarcode() {
-	const { CapacitorBarcodeScanner, CapacitorBarcodeScannerTypeHint, CapacitorBarcodeScannerCameraDirection } =
-		await import('@capacitor/barcode-scanner');
+	const {
+		CapacitorBarcodeScanner,
+		CapacitorBarcodeScannerTypeHint,
+		CapacitorBarcodeScannerCameraDirection
+	} = await import('@capacitor/barcode-scanner');
 
 	try {
 		const result = await CapacitorBarcodeScanner.scanBarcode({

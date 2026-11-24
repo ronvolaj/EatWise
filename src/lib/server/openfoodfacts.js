@@ -11,7 +11,8 @@ const CONTACT_EMAIL = 'ReiAli19@htl-shkoder.com'; // TODO: put your real contact
 const USER_AGENT = `EatWise/1.0 (${CONTACT_EMAIL})`;
 const TIMEOUT_MS = 4000;
 
-const FIELDS = 'code,product_name,product_name_en,product_name_de,generic_name,brands,serving_quantity,nutriments';
+const FIELDS =
+	'code,product_name,product_name_en,product_name_de,generic_name,brands,serving_quantity,nutriments';
 
 // Finds the product barcode in what the scanner read, or returns null when it is not a product code:
 // - a plain barcode with 8-14 digits (EAN-8, EAN-13, UPC, GTIN-14)
@@ -32,10 +33,13 @@ export async function lookupBarcode(code) {
 
 	let response;
 	try {
-		response = await fetch(`${BASE_URL}/api/v2/product/${encodeURIComponent(code)}.json?fields=${FIELDS}`, {
-			headers,
-			signal: AbortSignal.timeout(TIMEOUT_MS)
-		});
+		response = await fetch(
+			`${BASE_URL}/api/v2/product/${encodeURIComponent(code)}.json?fields=${FIELDS}`,
+			{
+				headers,
+				signal: AbortSignal.timeout(TIMEOUT_MS)
+			}
+		);
 	} catch (error) {
 		console.error('[Open Food Facts]', error?.name, error?.message);
 		return { error: error?.name === 'TimeoutError' ? 'timeout' : 'network' };
@@ -50,14 +54,17 @@ export async function lookupBarcode(code) {
 	const data = await response.json();
 	if (data.status !== 1 || !data.product) return { notFound: true };
 
-		const food = toFood(data.product, code);
+	const food = toFood(data.product, code);
 	if (food) return { food };
 
 	// Known product without nutrition values: name and brand help to add it by hand
 	const p = data.product;
 	return {
 		incomplete: true,
-		name: text(p.product_name || p.product_name_en || p.product_name_de || p.generic_name).slice(0, 100),
+		name: text(p.product_name || p.product_name_en || p.product_name_de || p.generic_name).slice(
+			0,
+			100
+		),
 		brand: text(p.brands?.split(',')[0]).slice(0, 100)
 	};
 }
@@ -65,10 +72,16 @@ export async function lookupBarcode(code) {
 // Turns an Open Food Facts product into the shape createFood() expects (values per 100 g)
 function toFood(product, code) {
 	const n = product.nutriments ?? {};
-	const name = text(product.product_name || product.product_name_en || product.product_name_de || product.generic_name);
+	const name = text(
+		product.product_name ||
+			product.product_name_en ||
+			product.product_name_de ||
+			product.generic_name
+	);
 
 	// Calories: kcal directly, or kJ converted (1 kcal = 4.184 kJ)
-	const kcal = number(n['energy-kcal_100g']) ?? (number(n.energy_100g) != null ? n.energy_100g / 4.184 : null);
+	const kcal =
+		number(n['energy-kcal_100g']) ?? (number(n.energy_100g) != null ? n.energy_100g / 4.184 : null);
 	const protein = number(n.proteins_100g);
 	const carbs = number(n.carbohydrates_100g);
 	const fat = number(n.fat_100g);

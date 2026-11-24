@@ -14,7 +14,9 @@
 	const categories = $derived(['All', ...new Set(data.foods.map((f) => f.category))]);
 	const filtered = $derived(
 		data.foods.filter(
-			(f) => (category === 'All' || f.category === category) && f.name.toLowerCase().includes(query.trim().toLowerCase())
+			(f) =>
+				(category === 'All' || f.category === category) &&
+				f.name.toLowerCase().includes(query.trim().toLowerCase())
 		)
 	);
 
@@ -30,8 +32,11 @@
 			<strong>{food.name}</strong>
 			<small>{food.brand} · {m.common_serving_g({ grams: food.serving })}</small>
 			<p>
-				<b>{scaled(food.protein, food.serving)}g</b> {m.common_p()}&nbsp; <b>{scaled(food.carbs, food.serving)}g</b> {m.common_c()}&nbsp;
-				<b>{scaled(food.fat, food.serving)}g</b> {m.common_f()}
+				<b>{scaled(food.protein, food.serving)}g</b>
+				{m.common_p()}&nbsp; <b>{scaled(food.carbs, food.serving)}g</b>
+				{m.common_c()}&nbsp;
+				<b>{scaled(food.fat, food.serving)}g</b>
+				{m.common_f()}
 			</p>
 		</div>
 		<div>
@@ -44,7 +49,12 @@
 <div class="screen">
 	<PageHeader title={m.search_title()} subtitle={m.search_subtitle()}>
 		{#snippet action()}
-			<a class="icon-button header-add" href="/app/custom{extra}" aria-label={m.common_add_own_food()} title={m.common_add_own_food()}>
+			<a
+				class="icon-button header-add"
+				href="/app/custom{extra}"
+				aria-label={m.common_add_own_food()}
+				title={m.common_add_own_food()}
+			>
 				<Icon name="plus" />
 			</a>
 		{/snippet}
@@ -52,15 +62,23 @@
 
 	<label class="search-box">
 		<Icon name="search" />
-		<input bind:value={query} placeholder={m.search_placeholder({ count: data.foods.length })} aria-label={m.search_label()} />
+		<input
+			bind:value={query}
+			placeholder={m.search_placeholder({ count: data.foods.length })}
+			aria-label={m.search_label()}
+		/>
 		{#if query}
-			<button class="icon-button" aria-label={m.common_clear()} onclick={() => (query = '')}><Icon name="close" /></button>
+			<button class="icon-button" aria-label={m.common_clear()} onclick={() => (query = '')}
+				><Icon name="close" /></button
+			>
 		{/if}
 	</label>
 
 	<div class="chips">
 		{#each categories as c}
-			<button class:active={category === c} onclick={() => (category = c)}>{c === 'All' ? m.search_all() : c}</button>
+			<button class:active={category === c} onclick={() => (category = c)}
+				>{c === 'All' ? m.search_all() : c}</button
+			>
 		{/each}
 	</div>
 
@@ -101,6 +119,8 @@
 	{/if}
 
 	{#if filtered.length}
-		<a class="button secondary add-custom" href="/app/custom{extra}"><Icon name="plus" /> {m.common_add_own_food()}</a>
+		<a class="button secondary add-custom" href="/app/custom{extra}"
+			><Icon name="plus" /> {m.common_add_own_food()}</a
+		>
 	{/if}
 </div>

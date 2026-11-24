@@ -31,7 +31,14 @@ export const actions = {
 		const date = cleanDate(String(form.get('date')));
 		const from = String(form.get('from'));
 
-		const result = await addEntry(user.id, food.id, date, meal, Number(form.get('quantity')), from === 'scan' ? 'barcode' : 'search');
+		const result = await addEntry(
+			user.id,
+			food.id,
+			date,
+			meal,
+			Number(form.get('quantity')),
+			from === 'scan' ? 'barcode' : 'search'
+		);
 		if (result.error) return fail(400, { error: result.error });
 
 		flash(cookies, m.flash_added_to({ food: food.name, meal: mealLabel(meal) }));

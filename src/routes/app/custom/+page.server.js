@@ -6,7 +6,7 @@ import { m } from '../../../lib/paraglide/messages.js';
 export async function load({ cookies, url }) {
 	await requireUser(cookies);
 	// Coming from "Product not found": the barcode is already filled in
-		// Coming from "Product not found": barcode (and name/brand from Open Food Facts) are already filled in
+	// Coming from "Product not found": barcode (and name/brand from Open Food Facts) are already filled in
 	const get = (key) => (url.searchParams.get(key) ?? '').slice(0, 100);
 	return { barcode: get('barcode'), name: get('name'), brand: get('brand') };
 }

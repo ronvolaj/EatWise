@@ -1,6 +1,13 @@
 import { fail } from '@sveltejs/kit';
 import { flash, requireUser } from '../../../lib/server/auth.js';
-import { cleanDate, getEntries, removeEntry, shiftDate, today, updateEntry } from '../../../lib/server/data.js';
+import {
+	cleanDate,
+	getEntries,
+	removeEntry,
+	shiftDate,
+	today,
+	updateEntry
+} from '../../../lib/server/data.js';
 import { m } from '../../../lib/paraglide/messages.js';
 
 export async function load({ cookies, url }) {
@@ -20,7 +27,12 @@ export const actions = {
 	update: async ({ request, cookies }) => {
 		const user = await requireUser(cookies);
 		const form = await request.formData();
-		const result = await updateEntry(user.id, Number(form.get('id')), Number(form.get('quantity')), String(form.get('meal')));
+		const result = await updateEntry(
+			user.id,
+			Number(form.get('id')),
+			Number(form.get('quantity')),
+			String(form.get('meal'))
+		);
 		if (result.error) return fail(400, { error: result.error });
 		flash(cookies, m.flash_entry_updated());
 	},

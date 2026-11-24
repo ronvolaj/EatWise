@@ -141,7 +141,8 @@ export function foodJson(food) {
 
 export function entryJson(entry) {
 	const result = { ...entry };
-	for (const key of ['quantity', 'kcal', 'protein', 'carbs', 'fat']) result[key] = Number(entry[key]);
+	for (const key of ['quantity', 'kcal', 'protein', 'carbs', 'fat'])
+		result[key] = Number(entry[key]);
 	return result;
 }
 

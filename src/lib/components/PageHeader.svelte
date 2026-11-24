@@ -8,7 +8,9 @@
 
 <header class="page-header">
 	{#if back}
-		<a class="icon-button" href={back} aria-label={m.common_back()} title={m.common_back()}><Icon name="back" /></a>
+		<a class="icon-button" href={back} aria-label={m.common_back()} title={m.common_back()}
+			><Icon name="back" /></a
+		>
 	{/if}
 	<div>
 		<h1>{title}</h1>

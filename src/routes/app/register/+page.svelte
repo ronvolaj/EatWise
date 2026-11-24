@@ -14,7 +14,15 @@
 
 	// step 0-6: questions, 7: results, 8: create account, 9: loading screen
 	let step = $state(0);
-	let plan = $state({ goal: '', sex: '', height: 178, weight: 78, target: 74, birth: '2000-05-14', activity: '' });
+	let plan = $state({
+		goal: '',
+		sex: '',
+		height: 178,
+		weight: 78,
+		target: 74,
+		birth: '2000-05-14',
+		activity: ''
+	});
 	let unit = $state('metric');
 	let account = $state({ email: '', username: '', password: '', confirm: '' });
 	let showPassword = $state(false);
@@ -26,7 +34,12 @@
 
 	const goalCards = [
 		{ icon: '↘', title: m.goal_lose(), note: m.register_goal_lose_note(), value: 'lose' },
-		{ icon: '＝', title: m.goal_maintain(), note: m.register_goal_maintain_note(), value: 'maintain' },
+		{
+			icon: '＝',
+			title: m.goal_maintain(),
+			note: m.register_goal_maintain_note(),
+			value: 'maintain'
+		},
 		{ icon: '↗', title: m.goal_gain(), note: m.register_goal_gain_note(), value: 'gain' }
 	];
 	const sexCards = [
@@ -35,7 +48,12 @@
 	];
 	const activityCards = [
 		{ icon: '🪑', title: m.activity_low(), note: m.register_activity_low_note(), value: 'low' },
-		{ icon: '🚶', title: m.activity_medium(), note: m.register_activity_medium_note(), value: 'medium' },
+		{
+			icon: '🚶',
+			title: m.activity_medium(),
+			note: m.register_activity_medium_note(),
+			value: 'medium'
+		},
 		{ icon: '🏃', title: m.activity_high(), note: m.register_activity_high_note(), value: 'high' }
 	];
 	// Goal name in the chosen language for the results summary
@@ -55,7 +73,10 @@
 			!!plan.birth && plan.birth <= todayDate,
 			!!plan.activity,
 			true,
-			emailOk && account.username.trim().length > 2 && account.password.length >= 6 && account.password === account.confirm
+			emailOk &&
+				account.username.trim().length > 2 &&
+				account.password.length >= 6 &&
+				account.password === account.confirm
 		][step]
 	);
 
@@ -92,7 +113,8 @@
 		serverError = '';
 		return async ({ result }) => {
 			if (result.type === 'success') step = 9;
-			else if (result.type === 'failure') serverError = result.data?.error ?? m.common_something_wrong();
+			else if (result.type === 'failure')
+				serverError = result.data?.error ?? m.common_something_wrong();
 			// The real reason comes from src/hooks.server.js (also printed in the terminal)
 			else if (result.type === 'error') serverError = result.error?.message ?? m.common_try_again();
 			else serverError = m.common_try_again();
@@ -103,7 +125,12 @@
 {#snippet cards(items, key)}
 	<div class="choice-list">
 		{#each items as item}
-			<button type="button" class="choice-card" class:selected={plan[key] === item.value} onclick={() => (plan[key] = item.value)}>
+			<button
+				type="button"
+				class="choice-card"
+				class:selected={plan[key] === item.value}
+				onclick={() => (plan[key] = item.value)}
+			>
 				<span class="choice-icon">{item.icon}</span>
 				<span>
 					<strong>{item.title}</strong>
@@ -126,8 +153,12 @@
 
 {#snippet unitSwitch(a, b)}
 	<div class="segmented">
-		<button type="button" class:active={unit === 'metric'} onclick={() => (unit = 'metric')}>{a}</button>
-		<button type="button" class:active={unit === 'imperial'} onclick={() => (unit = 'imperial')}>{b}</button>
+		<button type="button" class:active={unit === 'metric'} onclick={() => (unit = 'metric')}
+			>{a}</button
+		>
+		<button type="button" class:active={unit === 'imperial'} onclick={() => (unit = 'imperial')}
+			>{b}</button
+		>
 	</div>
 {/snippet}
 
@@ -144,7 +175,12 @@
 		{#if step < 8}
 			<div class="onboarding-top">
 				{#if step > 0}
-					<button type="button" class="icon-button" aria-label={m.common_back()} onclick={() => (step -= 1)}><Icon name="back" /></button>
+					<button
+						type="button"
+						class="icon-button"
+						aria-label={m.common_back()}
+						onclick={() => (step -= 1)}><Icon name="back" /></button
+					>
 				{:else}
 					<Logo />
 				{/if}
@@ -164,7 +200,9 @@
 				<p>{m.register_welcome_text()}</p>
 				<h2>{m.register_goal_question()}</h2>
 				{@render cards(goalCards, 'goal')}
-				<a class="text-link" href="/app/login">{m.register_have_account()} <strong>{m.common_sign_in()}</strong></a>
+				<a class="text-link" href="/app/login"
+					>{m.register_have_account()} <strong>{m.common_sign_in()}</strong></a
+				>
 			{:else if step === 1}
 				{@render question(m.register_sex_question(), m.register_sex_note())}
 				{@render cards(sexCards, 'sex')}
@@ -173,7 +211,11 @@
 				{@render unitSwitch('cm', 'ft / in')}
 				<div class="big-input">
 					{#if unit === 'metric'}
-						<input type="number" aria-label={m.register_height_cm_label()} bind:value={plan.height} /><span>cm</span>
+						<input
+							type="number"
+							aria-label={m.register_height_cm_label()}
+							bind:value={plan.height}
+						/><span>cm</span>
 					{:else}
 						<input
 							type="number"
@@ -196,7 +238,11 @@
 				{@render unitSwitch('kg', 'lb')}
 				<div class="big-input">
 					{#if unit === 'metric'}
-						<input type="number" aria-label={m.register_weight_kg_label()} bind:value={plan.weight} /><span>kg</span>
+						<input
+							type="number"
+							aria-label={m.register_weight_kg_label()}
+							bind:value={plan.weight}
+						/><span>kg</span>
 					{:else}
 						<input
 							type="number"
@@ -209,12 +255,20 @@
 			{:else if step === 4}
 				{@render question(targetQuestion, m.register_target_note())}
 				<div class="big-input">
-					<input type="number" aria-label={m.register_target_label()} bind:value={plan.target} /><span>kg</span>
+					<input
+						type="number"
+						aria-label={m.register_target_label()}
+						bind:value={plan.target}
+					/><span>kg</span>
 				</div>
 				<div class="weight-compare">
-					<div class="card"><small>{m.common_current()}</small><strong>{plan.weight} kg</strong></div>
+					<div class="card">
+						<small>{m.common_current()}</small><strong>{plan.weight} kg</strong>
+					</div>
 					<Icon name="next" />
-					<div class="card"><small>{m.common_target()}</small><strong>{plan.target} kg</strong></div>
+					<div class="card">
+						<small>{m.common_target()}</small><strong>{plan.target} kg</strong>
+					</div>
 				</div>
 			{:else if step === 5}
 				{@render question(m.register_birth_question(), m.register_birth_note())}
@@ -231,8 +285,15 @@
 					<div class="success-badge"><Icon name="check" /></div>
 					<h1>{m.register_result_title_1()}<br />{m.register_result_title_2()}</h1>
 					<p>{m.register_result_subtitle()}</p>
-					<Ring value={nutrition.kcal} max={Math.max(2600, nutrition.kcal + 400)} color="orange" size={164}>
-						<strong>{nutrition.kcal.toLocaleString(getLocale())}</strong><small>{m.register_result_kcal()}</small>
+					<Ring
+						value={nutrition.kcal}
+						max={Math.max(2600, nutrition.kcal + 400)}
+						color="orange"
+						size={164}
+					>
+						<strong>{nutrition.kcal.toLocaleString(getLocale())}</strong><small
+							>{m.register_result_kcal()}</small
+						>
 					</Ring>
 					<div class="result-macros">
 						<MacroBadge color="blue" label={m.common_protein()} value="{nutrition.protein}g" />
@@ -249,7 +310,12 @@
 				</div>
 			{:else if step === 8}
 				<header class="page-header">
-					<button type="button" class="icon-button" aria-label={m.common_back()} onclick={() => (step = 7)}><Icon name="back" /></button>
+					<button
+						type="button"
+						class="icon-button"
+						aria-label={m.common_back()}
+						onclick={() => (step = 7)}><Icon name="back" /></button
+					>
 					<div>
 						<h1>{m.register_account_title()}</h1>
 						<p>{m.register_account_text()}</p>
@@ -268,28 +334,63 @@
 
 					<label class="field">
 						<span>{m.common_email()}</span>
-						<input name="email" type="email" autocomplete="email" placeholder="alex@example.com" bind:value={account.email} />
-						{#if account.email && !emailOk}<small class="error">{m.register_error_email()}</small>{/if}
+						<input
+							name="email"
+							type="email"
+							autocomplete="email"
+							placeholder="alex@example.com"
+							bind:value={account.email}
+						/>
+						{#if account.email && !emailOk}<small class="error">{m.register_error_email()}</small
+							>{/if}
 					</label>
 					<label class="field">
 						<span>{m.register_username()}</span>
-						<input name="username" autocomplete="username" placeholder="alexwise" bind:value={account.username} />
-						{#if account.username && account.username.trim().length < 3}<small class="error">{m.register_error_username()}</small>{/if}
+						<input
+							name="username"
+							autocomplete="username"
+							placeholder="alexwise"
+							bind:value={account.username}
+						/>
+						{#if account.username && account.username.trim().length < 3}<small class="error"
+								>{m.register_error_username()}</small
+							>{/if}
 					</label>
 					<div class="password-field">
 						<label class="field">
 							<span>{m.common_password()}</span>
-							<input name="password" type={showPassword ? 'text' : 'password'} autocomplete="new-password" placeholder={m.register_password_placeholder()} bind:value={account.password} />
-							{#if account.password && account.password.length < 6}<small class="error">{m.register_error_password()}</small>{/if}
+							<input
+								name="password"
+								type={showPassword ? 'text' : 'password'}
+								autocomplete="new-password"
+								placeholder={m.register_password_placeholder()}
+								bind:value={account.password}
+							/>
+							{#if account.password && account.password.length < 6}<small class="error"
+									>{m.register_error_password()}</small
+								>{/if}
 						</label>
-						<button type="button" class="icon-button" aria-label={showPassword ? m.register_hide_password() : m.register_show_password()} onclick={() => (showPassword = !showPassword)}>
+						<button
+							type="button"
+							class="icon-button"
+							aria-label={showPassword ? m.register_hide_password() : m.register_show_password()}
+							onclick={() => (showPassword = !showPassword)}
+						>
 							<Icon name="eye" />
 						</button>
 					</div>
 					<label class="field">
 						<span>{m.register_confirm()}</span>
-						<input name="confirm" type={showPassword ? 'text' : 'password'} autocomplete="new-password" placeholder={m.register_confirm_placeholder()} bind:value={account.confirm} />
-						{#if account.confirm && account.confirm !== account.password}<small class="error">{m.register_error_confirm()}</small>{/if}
+						<input
+							name="confirm"
+							type={showPassword ? 'text' : 'password'}
+							autocomplete="new-password"
+							placeholder={m.register_confirm_placeholder()}
+							bind:value={account.confirm}
+						/>
+						{#if account.confirm && account.confirm !== account.password}<small class="error"
+								>{m.register_error_confirm()}</small
+							>{/if}
 					</label>
 
 					{#if serverError}<p class="form-error" role="alert">{serverError}</p>{/if}
@@ -300,10 +401,18 @@
 
 		<div class="onboarding-footer">
 			{#if step === 8}
-				<button class="button primary" form="account-form" disabled={!answered}>{m.register_create_button()} <Icon name="next" /></button>
+				<button class="button primary" form="account-form" disabled={!answered}
+					>{m.register_create_button()} <Icon name="next" /></button
+				>
 			{:else}
-				<button type="button" class="button primary" disabled={!answered} onclick={() => (step += 1)}>
-					{step === 7 ? m.register_get_started() : m.common_continue()} <Icon name="next" />
+				<button
+					type="button"
+					class="button primary"
+					disabled={!answered}
+					onclick={() => (step += 1)}
+				>
+					{step === 7 ? m.register_get_started() : m.common_continue()}
+					<Icon name="next" />
 				</button>
 			{/if}
 		</div>
