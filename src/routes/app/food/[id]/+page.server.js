@@ -2,11 +2,12 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { flash, requireUser } from '../../../../lib/server/auth.js';
 import { addEntry, cleanDate, deleteOwnFood, getFood } from '../../../../lib/server/data.js';
 import { mealLabel } from '../../../../lib/nutrition.js';
+import { m } from '../../../../lib/paraglide/messages.js';
 
 export async function load({ cookies, params, url }) {
 	const user = await requireUser(cookies);
 	const food = await getFood(Number(params.id), user.id);
-	if (!food) error(404, 'Food not found');
+	if (!food) error(404, m.search_not_found());
 
 	return {
 		food,
@@ -23,7 +24,7 @@ export const actions = {
 	add: async ({ request, cookies, params }) => {
 		const user = await requireUser(cookies);
 		const food = await getFood(Number(params.id), user.id);
-		if (!food) error(404, 'Food not found');
+		if (!food) error(404, m.search_not_found());
 
 		const form = await request.formData();
 		const meal = String(form.get('meal'));
@@ -33,7 +34,7 @@ export const actions = {
 		const result = await addEntry(user.id, food.id, date, meal, Number(form.get('quantity')), from === 'scan' ? 'barcode' : 'search');
 		if (result.error) return fail(400, { error: result.error });
 
-		flash(cookies, `${food.name} added to ${mealLabel(meal)}`);
+		flash(cookies, m.flash_added_to({ food: food.name, meal: mealLabel(meal) }));
 		redirect(303, from === 'home' ? '/app/homepage' : `/app/diary?date=${date}`);
 	},
 
@@ -41,11 +42,11 @@ export const actions = {
 	delete: async ({ cookies, params }) => {
 		const user = await requireUser(cookies);
 		const food = await getFood(Number(params.id), user.id);
-		if (!food) error(404, 'Food not found');
+		if (!food) error(404, m.search_not_found());
 		if (!(await deleteOwnFood(user.id, Number(params.id)))) {
-			return fail(403, { error: 'You can only delete foods you created.' });
+			return fail(403, { error: m.error_own_foods() });
 		}
-		flash(cookies, `${food.name} deleted`);
+		flash(cookies, m.flash_deleted({ name: food.name }));
 		redirect(303, '/app/search');
 	}
 };
