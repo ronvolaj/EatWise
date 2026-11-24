@@ -1,6 +1,7 @@
 // Camera helpers for the scan page.
 // Uses the browser camera API (getUserMedia), so the same code works
 // on the website (Vercel, HTTPS) and later inside the Capacitor app.
+import { m } from './paraglide/messages.js';
 
 const BACK_CAMERA = {
 	audio: false,
@@ -40,10 +41,10 @@ export function capturePhoto(video) {
 
 // Turns a camera error into a message for the user
 export function cameraErrorMessage(error) {
-	if (error?.name === 'NotAllowedError') return 'Camera access was blocked. Allow it in your browser settings.';
-	if (error?.name === 'NotFoundError') return 'No camera found on this device.';
+	if (error?.name === 'NotAllowedError') return m.camera_blocked();
+	if (error?.name === 'NotFoundError') return m.camera_not_found();
 	if (error?.message === 'unsupported' || !window.isSecureContext) {
-		return 'The camera only works over HTTPS (or on localhost).';
+		return m.camera_https();
 	}
-	return 'The camera could not be started.';
+	return m.camera_failed();
 }

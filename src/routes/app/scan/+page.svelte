@@ -5,6 +5,7 @@
 	import { cameraErrorMessage, capturePhoto, openCamera } from '../../../lib/camera.js';
 	import { scanBarcode } from '../../../lib/barcode.js';
 	import { MEALS, round } from '../../../lib/nutrition.js';
+	import { m } from '../../../lib/paraglide/messages.js';
 
 	let { data, form } = $props();
 
@@ -34,7 +35,7 @@
 			const result = await scanBarcode();
 			if (result) await goto(`/app/scan?code=${encodeURIComponent(result.code)}`);
 		} catch (error) {
-			scanError = 'The scanner could not start. Type the barcode number instead.';
+			scanError = m.scan_scanner_error();
 			console.error(error);
 		} finally {
 			scanning = false;
@@ -102,12 +103,12 @@
 
 <div class="scan-screen">
 	<div class="scan-top">
-		<h1>Scan food</h1>
-		<p>Point, capture, track</p>
+		<h1>{m.scan_title()}</h1>
+		<p>{m.scan_subtitle()}</p>
 		<div class="scan-switch">
-			<a href="/app/scan" class:active={data.mode === 'barcode'}><Icon name="barcode" />Barcode</a>
+			<a href="/app/scan" class:active={data.mode === 'barcode'}><Icon name="barcode" />{m.common_barcode()}</a>
 			<a href="/app/scan?mode=photo" class:active={data.mode === 'photo'}
-				><Icon name="camera" />Food Photo</a
+				><Icon name="camera" />{m.scan_photo_tab()}</a
 			>
 		</div>
 	</div>
@@ -131,25 +132,24 @@
 					<span>?</span>
 					{#if data.offStatus === 'not-product'}
 						<!-- e.g. a QR code with a website or text instead of a product barcode -->
-						<h2>Not a product code</h2>
-						<p>This code doesn't contain a product barcode. Scan the barcode on the package instead.</p>
-						<a class="button primary" href="/app/scan">Scan again</a>
+						<h2>{m.scan_not_product()}</h2>
+						<p>{m.scan_not_product_text()}</p>
+						<a class="button primary" href="/app/scan">{m.scan_again()}</a>
 					{:else if data.offStatus === 'error'}
-						<h2>No connection</h2>
-						<p>Open Food Facts could not be reached. Check your internet connection and try again.</p>
-						<a class="button primary" href="/app/scan?code={encodeURIComponent(data.notFound)}">Try again</a>
+						<h2>{m.scan_no_connection()}</h2>
+						<p>{m.scan_no_connection_text()}</p>
+						<a class="button primary" href="/app/scan?code={encodeURIComponent(data.notFound)}">{m.common_try_again_button()}</a>
 						<a class="button ghost" href="/app/custom?barcode={encodeURIComponent(data.barcode)}"
-							>Add product manually</a
+							>{m.scan_add_manually()}</a
 						>
 					{:else}
-						<h2>Product not found</h2>
+						<h2>{m.scan_not_found()}</h2>
 						{#if data.offStatus === 'incomplete'}
 							<p>
-								{data.offProduct?.name || `Barcode ${data.barcode}`} is in Open Food Facts, but its nutrition
-								values are missing. Add them from the package.
+								{m.scan_incomplete({ name: data.offProduct?.name || m.scan_barcode_name({ code: data.barcode }) })}
 							</p>
 						{:else}
-							<p>Barcode {data.barcode} isn't in our database or in Open Food Facts yet.</p>
+							<p>{m.scan_unknown({ code: data.barcode })}</p>
 						{/if}
 						<a
 							class="button primary"
@@ -157,26 +157,26 @@
 								barcode: data.barcode,
 								name: data.offProduct?.name ?? '',
 								brand: data.offProduct?.brand ?? ''
-							})}">Add product manually</a
+							})}">{m.scan_add_manually()}</a
 						>
-						<a class="button ghost" href="/app/scan">Try again</a>
+						<a class="button ghost" href="/app/scan">{m.common_try_again_button()}</a>
 					{/if}
 				</div>
 			{:else}
 				<div class="scan-frame"><span></span><span></span><span></span><span></span><i></i></div>
-				<p>{cameraError || 'Point the camera at a barcode'}</p>
+				<p>{cameraError || m.scan_point_barcode()}</p>
 			{/if}
 		{:else if status === 'ready'}
 			<div class="photo-guide" class:live={!cameraError}>{cameraError ? '🥗' : ''}</div>
-			<p>{cameraError || 'Center your meal in the frame'}</p>
+			<p>{cameraError || m.scan_center_meal()}</p>
 		{:else}
 			<!-- The photo that was taken -->
-			<img class="camera-feed" src={photoUrl} alt="Your meal" />
+			<img class="camera-feed" src={photoUrl} alt={m.scan_your_meal()} />
 			{#if status === 'analyzing'}
 				<div class="analyzing">
 					<div class="spinner"></div>
-					<h2>Analyzing your meal…</h2>
-					<p>Recognizing food and nutrition</p>
+					<h2>{m.scan_analyzing()}</h2>
+					<p>{m.scan_recognizing()}</p>
 				</div>
 			{:else if food}
 				<form
@@ -195,25 +195,25 @@
 					<h2>{food.name}<span class="confidence">Demo</span></h2>
 					<div class="ai-macros">
 						<strong>{per(food.kcal)}<small> kcal</small></strong>
-						<span>P {per(food.protein)}g</span>
-						<span>C {per(food.carbs)}g</span>
-						<span>F {per(food.fat)}g</span>
+						<span>{m.common_p()} {per(food.protein)}g</span>
+						<span>{m.common_c()} {per(food.carbs)}g</span>
+						<span>{m.common_f()} {per(food.fat)}g</span>
 					</div>
 					<label class="field">
-						<span>Quantity (g)</span>
+						<span>{m.common_quantity_g()}</span>
 						<input name="quantity" type="number" min="1" step="any" required bind:value={quantity} />
 					</label>
 					<label class="field">
-						<span>Add to meal</span>
+						<span>{m.common_add_to_meal()}</span>
 						<select name="meal" value="lunch">
 							{#each MEALS as meal}<option value={meal.id}>{meal.label}</option>{/each}
 						</select>
 					</label>
 					{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
 					<button class="button primary" disabled={saving}>
-						{saving ? 'Adding…' : 'Add to diary'}
+						{saving ? m.scan_adding() : m.scan_add_to_diary()}
 					</button>
-					<p class="estimate">Demo result. AI food recognition follows in Milestone 2.</p>
+					<p class="estimate">{m.scan_demo_note()}</p>
 				</form>
 			{/if}
 		{/if}
@@ -223,30 +223,30 @@
 		<div class="camera-controls barcode">
 						<button class="button primary scan-button" onclick={startScan} disabled={scanning}>
 				<Icon name="barcode" />
-				{scanning ? 'Scanning…' : 'Scan barcode'}
+				{scanning ? m.scan_scanning() : m.home_scan_barcode()}
 			</button>
 			{#if scanError}<p class="form-error" role="alert">{scanError}</p>{/if}
 			<form class="barcode-form" method="GET" action="/app/scan">
 				<input
 					name="code"
 					inputmode="numeric"
-					placeholder="Barcode number"
-					aria-label="Barcode number"
+					placeholder={m.scan_barcode_number()}
+					aria-label={m.scan_barcode_number()}
 					required
 				/>
-				<button class="button primary">Look up</button>
+				<button class="button primary">{m.scan_look_up()}</button>
 			</form>
-			<a class="button ghost" href="/app/scan?code={data.sampleBarcode}">Try sample barcode</a>
+			<a class="button ghost" href="/app/scan?code={data.sampleBarcode}">{m.scan_sample()}</a>
 		</div>
 	{:else if data.mode === 'photo' && status === 'ready'}
 		<div class="camera-controls">
 			<label class="upload-button">
-				<Icon name="camera" /><small>Upload</small>
+				<Icon name="camera" /><small>{m.scan_upload()}</small>
 				<input type="file" accept="image/*" onchange={uploadPhoto} />
 			</label>
 			<button
 				class="shutter"
-				aria-label="Take photo"
+				aria-label={m.home_take_photo()}
 				onclick={takePhoto}
 				disabled={!!cameraError}><span></span></button
 			>
@@ -254,7 +254,7 @@
 		</div>
 	{:else if data.mode === 'photo' && status === 'result'}
 		<div class="camera-controls">
-			<button class="button primary" onclick={() => (status = 'ready')}>Retake</button>
+			<button class="button primary" onclick={() => (status = 'ready')}>{m.scan_retake()}</button>
 		</div>
 	{/if}
 </div>

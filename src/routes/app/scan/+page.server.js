@@ -4,6 +4,7 @@ import { addEntry, createFood, findByBarcode, findByName, today } from '../../..
 import { lookupBarcode, productCode } from '../../../lib/server/openfoodfacts.js';
 import { SAMPLE_BARCODE } from '../../../lib/server/db.js';
 import { mealLabel } from '../../../lib/nutrition.js';
+import { m } from '../../../lib/paraglide/messages.js';
 
 // The demo result of the Food Photo mode
 const PHOTO_FOOD = 'Chicken Grain Bowl';
@@ -74,7 +75,7 @@ export const actions = {
 		);
 		if (result.error) return fail(400, { error: result.error });
 
-		flash(cookies, `${food.name} added to ${mealLabel(meal)}`);
+		flash(cookies, m.flash_added_to({ food: food.name, meal: mealLabel(meal) }));
 		redirect(303, '/app/diary');
 	}
 };
