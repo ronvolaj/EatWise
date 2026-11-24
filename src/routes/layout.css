@@ -270,7 +270,7 @@ small { font-size: 12px; }
 .nutrition-hero { display: grid; grid-template-columns: 1.25fr repeat(3, 1fr); align-items: center; text-align: center; padding: 14px 8px; }
 .nutrition-hero > div:first-child { border-right: 1px solid var(--line); }
 .nutrition-hero > div:first-child strong, .nutrition-hero > div:first-child span { display: block; }
-.nutrition-hero > div:first-child strong { font-size: 26px; color: #f97316; }
+.nutrition-hero > div:first-child strong { font-size: 26px; color: #f97316; } 
 .nutrition-hero > div:first-child span { font-size: 10px; color: var(--muted); }
 .nutrition-hero > div:not(:first-child) small, .nutrition-hero > div:not(:first-child) strong { display: block; }
 .nutrition-hero > div:not(:first-child) small { font-size: 9px; color: var(--muted); margin-top: 3px; }

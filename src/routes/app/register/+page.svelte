@@ -25,21 +25,21 @@
 	const loadingMessages = [m.register_loading_1(), m.register_loading_2(), m.register_loading_3()];
 
 	const goalCards = [
-		{ icon: '↘', title: m.register_goal_lose(), note: m.register_goal_lose_note(), value: 'lose' },
-		{ icon: '＝', title: m.register_goal_maintain(), note: m.register_goal_maintain_note(), value: 'maintain' },
-		{ icon: '↗', title: m.register_goal_gain(), note: m.register_goal_gain_note(), value: 'gain' }
+		{ icon: '↘', title: m.goal_lose(), note: m.register_goal_lose_note(), value: 'lose' },
+		{ icon: '＝', title: m.goal_maintain(), note: m.register_goal_maintain_note(), value: 'maintain' },
+		{ icon: '↗', title: m.goal_gain(), note: m.register_goal_gain_note(), value: 'gain' }
 	];
 	const sexCards = [
 		{ icon: '♂', title: m.register_sex_male(), value: 'male' },
 		{ icon: '♀', title: m.register_sex_female(), value: 'female' }
 	];
 	const activityCards = [
-		{ icon: '🪑', title: m.register_activity_low(), note: m.register_activity_low_note(), value: 'low' },
-		{ icon: '🚶', title: m.register_activity_medium(), note: m.register_activity_medium_note(), value: 'medium' },
-		{ icon: '🏃', title: m.register_activity_high(), note: m.register_activity_high_note(), value: 'high' }
+		{ icon: '🪑', title: m.activity_low(), note: m.register_activity_low_note(), value: 'low' },
+		{ icon: '🚶', title: m.activity_medium(), note: m.register_activity_medium_note(), value: 'medium' },
+		{ icon: '🏃', title: m.activity_high(), note: m.register_activity_high_note(), value: 'high' }
 	];
 	// Goal name in the chosen language for the results summary
-	const goalNames = { lose: m.register_goal_lose(), maintain: m.register_goal_maintain(), gain: m.register_goal_gain() };
+	const goalNames = { lose: m.goal_lose(), maintain: m.goal_maintain(), gain: m.goal_gain() };
 
 	const nutrition = $derived(calculatePlan(plan));
 
@@ -235,9 +235,9 @@
 						<strong>{nutrition.kcal.toLocaleString(getLocale())}</strong><small>{m.register_result_kcal()}</small>
 					</Ring>
 					<div class="result-macros">
-						<MacroBadge color="blue" label={m.register_protein()} value="{nutrition.protein}g" />
-						<MacroBadge color="amber" label={m.register_carbs()} value="{nutrition.carbs}g" />
-						<MacroBadge color="purple" label={m.register_fat()} value="{nutrition.fat}g" />
+						<MacroBadge color="blue" label={m.common_protein()} value="{nutrition.protein}g" />
+						<MacroBadge color="amber" label={m.common_carbs()} value="{nutrition.carbs}g" />
+						<MacroBadge color="purple" label={m.common_fat()} value="{nutrition.fat}g" />
 					</div>
 					<div class="card plan-summary">
 						<div><span>{m.common_current()}</span><strong>{plan.weight} kg</strong></div>

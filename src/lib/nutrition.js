@@ -1,14 +1,29 @@
 // Shared helpers. This file is used in the browser AND on the server.
+import { m } from './paraglide/messages.js';
+import { getLocale } from './paraglide/runtime.js';
 
+// The labels are getters: they are read when they are shown,
+// so they are always in the user's current language
 export const MEALS = [
-	{ id: 'breakfast', label: 'Breakfast', icon: '🍳' },
-	{ id: 'lunch', label: 'Lunch', icon: '🥗' },
-	{ id: 'dinner', label: 'Dinner', icon: '🍲' },
-	{ id: 'snack', label: 'Snacks', icon: '🍓' }
+	{ id: 'breakfast', icon: '🍳', get label() { return m.meal_breakfast(); } },
+	{ id: 'lunch', icon: '🥗', get label() { return m.meal_lunch(); } },
+	{ id: 'dinner', icon: '🍲', get label() { return m.meal_dinner(); } },
+	{ id: 'snack', icon: '🍓', get label() { return m.meal_snack(); } }
 ];
 
-export const GOALS = { lose: 'Lose Weight', maintain: 'Maintain Weight', gain: 'Gain Weight' };
-export const ACTIVITIES = { low: 'Low', medium: 'Medium', high: 'A lot' };
+export const GOALS = {
+	get lose() { return m.goal_lose(); },
+	get maintain() { return m.goal_maintain(); },
+	get gain() { return m.goal_gain(); }
+};
+export const ACTIVITIES = {
+	get low() { return m.activity_low(); },
+	get medium() { return m.activity_medium(); },
+	get high() { return m.activity_high(); }
+};
+
+// Number with the separators of the current language (1,850 / 1.850)
+export const num = (n) => Number(n).toLocaleString(getLocale());
 
 export const round = (n) => Math.round(n);
 
@@ -70,7 +85,31 @@ export function formatHeight(cm, units) {
 	return `${Math.floor(inches / 12)}′ ${inches % 12}″`;
 }
 
-// "2026-10-04" -> "Sunday, October 4"
+// Albanian names. Some browsers have no Albanian date format and would show English,
+// so the app formats Albanian dates itself (same result on the server and in the browser).
+const SQ_DAYS = ['e diel', 'e hënë', 'e martë', 'e mërkurë', 'e enjte', 'e premte', 'e shtunë'];
+const SQ_DAY_LETTERS = ['D', 'H', 'M', 'M', 'E', 'P', 'Sh'];
+const SQ_MONTHS = ['janar', 'shkurt', 'mars', 'prill', 'maj', 'qershor', 'korrik', 'gusht', 'shtator', 'tetor', 'nëntor', 'dhjetor'];
+const SQ_MONTHS_SHORT = ['jan', 'shk', 'mar', 'pri', 'maj', 'qer', 'korr', 'gush', 'sht', 'tet', 'nën', 'dhj'];
+
+function albanianDate(d, options) {
+	const month = options.month === 'short' ? SQ_MONTHS_SHORT[d.getMonth()] : SQ_MONTHS[d.getMonth()];
+	let text = `${d.getDate()} ${month}`;
+	if (options.year) text += ` ${d.getFullYear()}`;
+	if (options.weekday) text = `${SQ_DAYS[d.getDay()]}, ${text}`;
+	return text;
+}
+
+// "2026-10-04" -> "Sunday, October 4" / "Sonntag, 4. Oktober" / "e diel, 4 tetor"
 export function longDate(date, options = { weekday: 'long', month: 'long', day: 'numeric' }) {
-	return new Date(date + 'T12:00:00').toLocaleDateString('en-US', options);
+	const d = new Date(date + 'T12:00:00');
+	if (getLocale() === 'sq') return albanianDate(d, options);
+	return d.toLocaleDateString(getLocale(), options);
+}
+
+// First letter of the weekday for charts (S, M, T ... / S, M, D ... / D, H, M ...)
+export function weekdayLetter(date) {
+	const d = new Date(date + 'T12:00:00');
+	if (getLocale() === 'sq') return SQ_DAY_LETTERS[d.getDay()];
+	return d.toLocaleDateString(getLocale(), { weekday: 'narrow' });
 }

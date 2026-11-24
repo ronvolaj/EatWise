@@ -1,5 +1,6 @@
 <script>
 	import Icon from './Icon.svelte';
+	import { m } from '../paraglide/messages.js';
 
 	// back = link of the back button (optional)
 	let { title, subtitle = '', back = '', action = null } = $props();
@@ -7,7 +8,7 @@
 
 <header class="page-header">
 	{#if back}
-		<a class="icon-button" href={back} aria-label="Back" title="Back"><Icon name="back" /></a>
+		<a class="icon-button" href={back} aria-label={m.common_back()} title={m.common_back()}><Icon name="back" /></a>
 	{/if}
 	<div>
 		<h1>{title}</h1>
