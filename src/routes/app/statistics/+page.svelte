@@ -2,11 +2,18 @@
 	import MacroBadge from '../../../lib/components/MacroBadge.svelte';
 	import MacroRow from '../../../lib/components/MacroRow.svelte';
 	import PageHeader from '../../../lib/components/PageHeader.svelte';
-	import { formatWeight, longDate, round, sumEntries } from '../../../lib/nutrition.js';
+	import { formatWeight, longDate, num, round, sumEntries, weekdayLetter } from '../../../lib/nutrition.js';
+	import { m } from '../../../lib/paraglide/messages.js';
 
 	let { data } = $props();
 
 	let range = $state('Week');
+	// The range stays 'Day' / 'Week' / 'Month' in the code, only the button text is translated
+	const ranges = [
+		{ value: 'Day', label: m.stats_day() },
+		{ value: 'Week', label: m.stats_week() },
+		{ value: 'Month', label: m.stats_month() }
+	];
 
 	const user = $derived(data.user);
 	const totals = $derived(sumEntries(data.entries));
@@ -23,20 +30,24 @@
 	// Bars use up to 88% of the 140px column, the label below needs 16px
 	const barHeight = (kcal) => (kcal / chartMax) * 88;
 	const goalTop = $derived(154 - barHeight(user.kcal_target) * 1.4);
+	// 'over', 'under' or 'ok' (null = nothing logged)
 	const status = $derived(
 		!logged.length
 			? null
 			: average > user.kcal_target * 1.05
-				? 'Over goal'
+				? 'over'
 				: average < user.kcal_target * 0.8
-					? 'Under goal'
-					: 'On target'
+					? 'under'
+					: 'ok'
+	);
+	const statusText = $derived(
+		status === 'over' ? m.stats_over() : status === 'under' ? m.stats_under() : m.stats_on_target()
 	);
 
 	function barLabel(day, i) {
 		const d = new Date(day.date + 'T12:00:00');
 		if (range === 'Month') return i % 5 === 4 || i === shown.length - 1 ? d.getDate() : '';
-		return ['S', 'M', 'T', 'W', 'T', 'F', 'S'][d.getDay()];
+		return weekdayLetter(day.date);
 	}
 
 	// ----- Macro donut: share of today's calories (protein and carbs 4 kcal/g, fat 9 kcal/g) -----
@@ -79,29 +90,29 @@
 </script>
 
 <div class="screen stats-screen">
-	<PageHeader title="Statistics" subtitle="Your progress at a glance" back="/app/homepage" />
+	<PageHeader title={m.stats_title()} subtitle={m.stats_subtitle()} back="/app/homepage" />
 
 	<div class="segmented">
-		{#each ['Day', 'Week', 'Month'] as r}
-			<button class:active={range === r} onclick={() => (range = r)}>{r}</button>
+		{#each ranges as r}
+			<button class:active={range === r.value} onclick={() => (range = r.value)}>{r.label}</button>
 		{/each}
 	</div>
 
 	<div class="card">
 		<div class="card-title">
 			<div>
-				<span class="eyebrow">CALORIE INTAKE</span>
+				<span class="eyebrow">{m.stats_calorie_intake()}</span>
 				<h2>
-					{average.toLocaleString('en-US')}
-					<small>{range === 'Day' ? 'kcal today' : 'avg kcal'}</small>
+					{num(average)}
+					<small>{range === 'Day' ? m.stats_kcal_today() : m.stats_avg_kcal()}</small>
 				</h2>
 			</div>
-			{#if status}<span class="positive" class:warn={status !== 'On target'}>{status}</span>{/if}
+			{#if status}<span class="positive" class:warn={status !== 'ok'}>{statusText}</span>{/if}
 		</div>
 		{#if logged.length}
 			<div class="bar-chart" class:month={range === 'Month'}>
 				<div class="goal-line" style="top: {goalTop}px">
-					<span>{user.kcal_target.toLocaleString('en-US')} goal</span>
+					<span>{m.stats_goal_line({ kcal: num(user.kcal_target) })}</span>
 				</div>
 				{#each shown as day, i}
 					<div title="{shortDate(day.date)}: {round(day.kcal)} kcal">
@@ -115,46 +126,47 @@
 			</div>
 		{:else}
 			<p class="chart-empty">
-				No meals logged {range === 'Day' ? 'today' : `in the last ${range === 'Week' ? '7' : '30'} days`}.
-				<a href="/app/search">Log your first meal</a> to see your statistics.
+				{range === 'Day' ? m.stats_empty_today() : m.stats_empty_days({ days: range === 'Week' ? 7 : 30 })}
+				<a href="/app/search">{m.stats_log_first()}</a>
+				{m.stats_to_see()}
 			</p>
 		{/if}
 	</div>
 
 	<div class="card">
-		<span class="eyebrow">MACRO DISTRIBUTION · TODAY</span>
+		<span class="eyebrow">{m.stats_macro_today()}</span>
 		<div class="donut-layout">
 			<div class="donut" style="background: {donut}">
-				<div><strong>{round(totals.kcal).toLocaleString('en-US')}</strong><small>kcal</small></div>
+				<div><strong>{num(round(totals.kcal))}</strong><small>kcal</small></div>
 			</div>
 			<div class="donut-legend">
 				<MacroBadge
 					color="blue"
-					label="Protein · {share.protein}%"
+					label="{m.common_protein()} · {share.protein}%"
 					value="{round(totals.protein)}g"
 				/>
-				<MacroBadge color="amber" label="Carbs · {share.carbs}%" value="{round(totals.carbs)}g" />
-				<MacroBadge color="purple" label="Fat · {share.fat}%" value="{round(totals.fat)}g" />
+				<MacroBadge color="amber" label="{m.common_carbs()} · {share.carbs}%" value="{round(totals.carbs)}g" />
+				<MacroBadge color="purple" label="{m.common_fat()} · {share.fat}%" value="{round(totals.fat)}g" />
 			</div>
 		</div>
 	</div>
 
 	<div class="card">
 		<div class="card-title">
-			<h2>Goal vs actual</h2>
-			<span>Today</span>
+			<h2>{m.stats_goal_vs_actual()}</h2>
+			<span>{m.common_today()}</span>
 		</div>
-		<MacroRow label="Protein" color="blue" value={totals.protein} max={user.protein_target_g} />
-		<MacroRow label="Carbs" color="amber" value={totals.carbs} max={user.carbs_target_g} />
-		<MacroRow label="Fat" color="purple" value={totals.fat} max={user.fat_target_g} />
+		<MacroRow label={m.common_protein()} color="blue" value={totals.protein} max={user.protein_target_g} />
+		<MacroRow label={m.common_carbs()} color="amber" value={totals.carbs} max={user.carbs_target_g} />
+		<MacroRow label={m.common_fat()} color="purple" value={totals.fat} max={user.fat_target_g} />
 	</div>
 
 	<div class="card">
 		<div class="card-title">
 			<div>
-				<span class="eyebrow">WEIGHT HISTORY</span>
+				<span class="eyebrow">{m.stats_weight_history()}</span>
 				{#if weights.length > 1}
-					<h2>{changeText} <small>since {shortDate(weights[0].date)}</small></h2>
+					<h2>{changeText} <small>{m.stats_since({ date: shortDate(weights[0].date) })}</small></h2>
 				{:else if weights.length === 1}
 					<h2>{formatWeight(weights[0].weight, user.units)}</h2>
 				{/if}
@@ -179,7 +191,7 @@
 			</div>
 		{:else}
 			<p class="chart-empty">
-				Log your weight on another day to see your trend. You can do that in your profile.
+				{m.stats_weight_empty()}
 			</p>
 		{/if}
 	</div>
