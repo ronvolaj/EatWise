@@ -1,51 +1,52 @@
 <script>
 	import { enhance } from '$app/forms';
 	import PageHeader from '../../../lib/components/PageHeader.svelte';
+	import { m } from '../../../lib/paraglide/messages.js';
 
 	let { data, form } = $props();
 
 	const nutrients = [
-		{ name: 'kcal', label: 'Calories *' },
-		{ name: 'protein', label: 'Protein *' },
-		{ name: 'carbs', label: 'Carbs *' },
-		{ name: 'fat', label: 'Fat *' },
-		{ name: 'fiber', label: 'Fiber' },
-		{ name: 'sugar', label: 'Sugar' }
+		{ name: 'kcal', label: m.common_calories(), required: true },
+		{ name: 'protein', label: m.common_protein(), required: true },
+		{ name: 'carbs', label: m.common_carbs(), required: true },
+		{ name: 'fat', label: m.common_fat(), required: true },
+		{ name: 'fiber', label: m.common_fiber() },
+		{ name: 'sugar', label: m.common_sugar() }
 	];
 	// After an error the server sends the typed values back
 	const old = $derived(form?.values ?? {});
 </script>
 
 <form class="screen custom-screen" method="POST" use:enhance>
-	<PageHeader title="Add your own food" subtitle="Nutrition values per 100 grams" back="/app/search" />
+	<PageHeader title={m.common_add_own_food()} subtitle={m.custom_subtitle()} back="/app/search" />
 
 	<div class="form-stack">
 		<label class="field">
-			<span>Food name *</span>
-			<input name="name" placeholder="e.g. Homemade granola" required value={old.name ?? data.name} />
+			<span>{m.custom_name()}</span>
+			<input name="name" placeholder={m.custom_name_placeholder()} required value={old.name ?? data.name} />
 		</label>
 		<label class="field">
-			<span>Brand</span>
-			<input name="brand" placeholder="Optional" value={old.brand ?? data.brand} />
+			<span>{m.common_brand()}</span>
+			<input name="brand" placeholder={m.common_optional()} value={old.brand ?? data.brand} />
 		</label>
 		<label class="field">
-			<span>Barcode</span>
-			<input name="barcode" inputmode="numeric" placeholder="Optional" value={old.barcode ?? data.barcode} />
+			<span>{m.common_barcode()}</span>
+			<input name="barcode" inputmode="numeric" placeholder={m.common_optional()} value={old.barcode ?? data.barcode} />
 		</label>
 		<label class="field">
-			<span>Serving size (g) *</span>
+			<span>{m.custom_serving()}</span>
 			<input name="serving" type="number" min="1" step="any" required value={old.serving ?? '100'} />
 		</label>
 		<div class="nutrient-inputs">
 			{#each nutrients as n}
 				<label class="field">
-					<span>{n.label}</span>
-					<input name={n.name} type="number" min="0" step="any" placeholder="0" required={n.label.endsWith('*')} value={old[n.name] ?? ''} />
+					<span>{n.label}{n.required ? ' *' : ''}</span>
+					<input name={n.name} type="number" min="0" step="any" placeholder="0" required={n.required} value={old[n.name] ?? ''} />
 				</label>
 			{/each}
 		</div>
 	</div>
 
 	{#if form?.error}<p class="form-error" role="alert">{form.error}</p>{/if}
-	<button class="button primary">Save Food</button>
+	<button class="button primary">{m.common_save_food()}</button>
 </form>

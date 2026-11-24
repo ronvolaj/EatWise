@@ -1,6 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { flash, requireUser } from '../../../lib/server/auth.js';
 import { createFood } from '../../../lib/server/data.js';
+import { m } from '../../../lib/paraglide/messages.js';
 
 export async function load({ cookies, url }) {
 	await requireUser(cookies);
@@ -40,7 +41,7 @@ export const actions = {
 			if (url.searchParams.get(key)) next.set(key, url.searchParams.get(key));
 		}
 
-		flash(cookies, 'Custom food saved');
+		flash(cookies, m.flash_custom_saved());
 		redirect(303, `/app/food/${result.id}${next.size ? '?' + next : ''}`);
 	}
 };
