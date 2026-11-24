@@ -1,6 +1,7 @@
 import { fail, redirect } from '@sveltejs/kit';
 import { deleteUser, flash, logout, requireUser } from '../../../lib/server/auth.js';
 import { listWeights, logWeight, toggleSetting, updateProfile, updateTargets } from '../../../lib/server/data.js';
+import { m } from '../../../lib/paraglide/messages.js';
 
 export async function load({ cookies }) {
 	const user = await requireUser(cookies);
@@ -29,7 +30,7 @@ export const actions = {
 			weights.at(-1)?.weight ?? user.target_weight_kg
 		);
 		if (result.error) return fail(400, { profileError: result.error });
-		flash(cookies, `Saved. Your new daily goal is ${result.plan.kcal} kcal.`);
+		flash(cookies, m.flash_goal_saved({ kcal: result.plan.kcal }));
 	},
 
 	// Daily calorie and macro targets
@@ -43,7 +44,7 @@ export const actions = {
 			fat: Number(form.get('fat'))
 		});
 		if (result.error) return fail(400, { targetsError: result.error });
-		flash(cookies, 'Targets updated');
+		flash(cookies, m.flash_targets());
 	},
 
 	weight: async ({ request, cookies }) => {
@@ -54,7 +55,7 @@ export const actions = {
 		if (user.units === 'imperial') weight = weight / 2.205;
 		const result = await logWeight(user.id, Math.round(weight * 10) / 10);
 		if (result.error) return fail(400, { weightError: result.error });
-		flash(cookies, 'Weight logged successfully');
+		flash(cookies, m.flash_weight());
 	},
 
 	// Units, notifications and dark mode
