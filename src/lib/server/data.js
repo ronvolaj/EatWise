@@ -1,6 +1,8 @@
 // All database queries for foods, diary, water, weight and profile.
 import { isId, query, queryOne } from './db.js';
 import { calculatePlan } from '../nutrition.js';
+// Error texts in the user's language
+import { m } from '../paraglide/messages.js';
 
 // ---------- Dates (always YYYY-MM-DD) ----------
 
@@ -58,17 +60,17 @@ export async function findByName(name) {
 
 // userId = null creates a built-in food (admin), otherwise the user's own food
 export async function createFood(userId, food) {
-	if (!food.name) return { error: 'Food name is required.' };
-	if (food.name.length > 100 || food.brand.length > 100) return { error: 'Name and brand can have at most 100 characters.' };
-	if (food.barcode.length > 32) return { error: 'The barcode can have at most 32 characters.' };
-	if (!(food.serving > 0)) return { error: 'Serving size must be greater than 0.' };
+	if (!food.name) return { error: m.error_food_name() };
+	if (food.name.length > 100 || food.brand.length > 100) return { error: m.error_name_long() };
+	if (food.barcode.length > 32) return { error: m.error_barcode_long() };
+	if (!(food.serving > 0)) return { error: m.error_serving() };
 	for (const key of ['kcal', 'protein', 'carbs', 'fat', 'fiber', 'sugar']) {
-		if (!(food[key] >= 0)) return { error: 'Please complete required fields with non-negative values.' };
+		if (!(food[key] >= 0)) return { error: m.error_required() };
 	}
 	if (food.barcode && (await queryOne('SELECT id FROM foods WHERE barcode = ?', [food.barcode]))) {
-		return { error: 'A food with this barcode already exists.' };
+		return { error: m.error_barcode_exists() };
 	}
-	if ((food.icon ?? '').length > 16 || (food.category ?? '').length > 50) return { error: 'Icon or category is too long.' };
+	if ((food.icon ?? '').length > 16 || (food.category ?? '').length > 50) return { error: m.error_icon_long() };
 	const result = await query(
 		`INSERT INTO foods (name, brand, icon, category, barcode, serving_size_g, kcal, protein_g, carbs_g, fat_g, fiber_g, sugar_g, created_by)
 		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -134,8 +136,8 @@ export async function getEntries(userId, date) {
 const MEAL_IDS = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 export async function addEntry(userId, foodId, date, meal, quantity, source = 'search') {
-	if (!MEAL_IDS.includes(meal)) return { error: 'Choose a meal.' };
-	if (!(quantity > 0)) return { error: 'Quantity must be greater than 0.' };
+	if (!MEAL_IDS.includes(meal)) return { error: m.error_choose_meal() };
+	if (!(quantity > 0)) return { error: m.error_quantity() };
 	await query('INSERT INTO diary_entries (user_id, food_id, entry_date, meal, quantity_g, source) VALUES (?, ?, ?, ?, ?, ?)', [
 		userId,
 		foodId,
@@ -148,9 +150,9 @@ export async function addEntry(userId, foodId, date, meal, quantity, source = 's
 }
 
 export async function updateEntry(userId, entryId, quantity, meal) {
-	if (!isId(entryId)) return { error: 'This entry does not exist.' };
-	if (!MEAL_IDS.includes(meal)) return { error: 'Choose a meal.' };
-	if (!(quantity > 0)) return { error: 'Quantity must be greater than 0.' };
+	if (!isId(entryId)) return { error: m.error_entry_missing() };
+	if (!MEAL_IDS.includes(meal)) return { error: m.error_choose_meal() };
+	if (!(quantity > 0)) return { error: m.error_quantity() };
 	await query('UPDATE diary_entries SET quantity_g = ?, meal = ? WHERE id = ? AND user_id = ?', [quantity, meal, entryId, userId]);
 	return {};
 }
@@ -203,7 +205,7 @@ export async function listWeights(userId) {
 
 // One weight per day: logging again on the same day replaces the value
 export async function logWeight(userId, weight) {
-	if (!(weight >= 30 && weight <= 400)) return { error: 'Enter a weight between 30 and 400 kg.' };
+	if (!(weight >= 30 && weight <= 400)) return { error: m.auth_error_weight() };
 	await query(
 		`INSERT INTO weight_entries (user_id, weight_kg, logged_on) VALUES (?, ?, ?)
 		 ON DUPLICATE KEY UPDATE weight_kg = VALUES(weight_kg)`,
@@ -215,9 +217,9 @@ export async function logWeight(userId, weight) {
 // ---------- Profile ----------
 
 export async function updateTargets(userId, t) {
-	if (!(t.kcal >= 800 && t.kcal <= 6000)) return { error: 'Calories must be between 800 and 6,000.' };
+	if (!(t.kcal >= 800 && t.kcal <= 6000)) return { error: m.error_kcal_range() };
 	for (const key of ['protein', 'carbs', 'fat']) {
-		if (!(t[key] >= 0 && t[key] <= 1000)) return { error: 'Macro targets must be between 0 and 1,000 g.' };
+		if (!(t[key] >= 0 && t[key] <= 1000)) return { error: m.error_macro_range() };
 	}
 	await query('UPDATE profiles SET kcal_target = ?, protein_target_g = ?, carbs_target_g = ?, fat_target_g = ? WHERE user_id = ?', [
 		Math.round(t.kcal),
@@ -242,10 +244,10 @@ export async function toggleSetting(user, name) {
 
 // Goal, activity, height and target weight. The daily targets are calculated again.
 export async function updateProfile(user, values, currentWeight) {
-	if (!['lose', 'maintain', 'gain'].includes(values.goal)) return { error: 'Choose a goal.' };
-	if (!['low', 'medium', 'high'].includes(values.activity)) return { error: 'Choose your activity level.' };
-	if (!(values.height >= 80 && values.height <= 260)) return { error: 'Enter a height between 80 and 260 cm.' };
-	if (!(values.target >= 30 && values.target <= 400)) return { error: 'Enter a target weight between 30 and 400 kg.' };
+	if (!['lose', 'maintain', 'gain'].includes(values.goal)) return { error: m.auth_error_goal() };
+	if (!['low', 'medium', 'high'].includes(values.activity)) return { error: m.auth_error_activity() };
+	if (!(values.height >= 80 && values.height <= 260)) return { error: m.auth_error_height() };
+	if (!(values.target >= 30 && values.target <= 400)) return { error: m.auth_error_target() };
 
 	const plan = calculatePlan({
 		sex: user.sex,

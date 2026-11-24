@@ -99,7 +99,7 @@ export async function register(cookies, input) {
 	const weight = Number(input.weight);
 	const target = Number(input.target);
 
-		if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: m.auth_error_email() };
+	if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { error: m.auth_error_email() };
 	if (username.length < 3) return { error: m.auth_error_username_short() };
 	if (username.length > 50) return { error: m.auth_error_username_long() };
 	if (input.password.length < 6) return { error: m.auth_error_password_short() };
@@ -151,7 +151,7 @@ export async function register(cookies, input) {
 		await connection.commit();
 	} catch (error) {
 		await connection.rollback();
-		if (error.code === 'ER_DUP_ENTRY') return { error: 'This email or username is already in use.' };
+		if (error.code === 'ER_DUP_ENTRY') return { error: m.auth_error_duplicate() };
 		throw error;
 	} finally {
 		connection.release();
@@ -197,8 +197,8 @@ export async function countFoods() {
 }
 
 export async function setRole(userId, role) {
-	if (!isId(userId)) return { error: 'This user does not exist.' };
-	if (role !== 'user' && role !== 'admin') return { error: 'This role does not exist.' };
+	if (!isId(userId)) return { error: m.error_user_missing() };
+	if (role !== 'user' && role !== 'admin') return { error: m.error_role_missing() };
 	await query('UPDATE users SET role = ? WHERE id = ?', [role, userId]);
 	return {};
 }
