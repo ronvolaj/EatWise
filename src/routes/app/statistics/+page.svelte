@@ -181,28 +181,24 @@
 	<div class="card">
 		<div class="card-title">
 			<h2>{m.stats_goal_vs_actual()}</h2>
-						<span>{range === 'Day' ? m.common_today() : m.stats_avg_per_day()}</span>
-		</div>
-		<MacroRow label={m.common_protein()} color="blue" value={macros.protein} max={user.protein_target_g} />
-		<MacroRow label={m.common_carbs()} color="amber" value={macros.carbs} max={user.carbs_target_g} />
-		<MacroRow label={m.common_fat()} color="purple" value={macros.fat} max={user.fat_target_g} />
-		{#if range !== 'Day' && logged.length}
-			<p class="stats-note">{m.stats_days_logged({ count: logged.length, total: shown.length })}</p>
-		{/if}
+			<span>{range === 'Day' ? m.common_today() : m.stats_avg_per_day()}</span>
 		</div>
 		<MacroRow
 			label={m.common_protein()}
 			color="blue"
-			value={totals.protein}
+			value={macros.protein}
 			max={user.protein_target_g}
 		/>
 		<MacroRow
 			label={m.common_carbs()}
 			color="amber"
-			value={totals.carbs}
+			value={macros.carbs}
 			max={user.carbs_target_g}
 		/>
-		<MacroRow label={m.common_fat()} color="purple" value={totals.fat} max={user.fat_target_g} />
+		<MacroRow label={m.common_fat()} color="purple" value={macros.fat} max={user.fat_target_g} />
+		{#if range !== 'Day' && logged.length}
+			<p class="stats-note">{m.stats_days_logged({ count: logged.length, total: shown.length })}</p>
+		{/if}
 	</div>
 
 	<div class="card">
