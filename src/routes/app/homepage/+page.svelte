@@ -3,7 +3,8 @@
 	import Icon from '../../../lib/components/Icon.svelte';
 	import Ring from '../../../lib/components/Ring.svelte';
 	import MacroRow from '../../../lib/components/MacroRow.svelte';
-	import { MEALS, longDate, round, sumEntries } from '../../../lib/nutrition.js';
+	import { MEALS, longDate, num, round, sumEntries, weekdayLetter } from '../../../lib/nutrition.js';
+	import { m } from '../../../lib/paraglide/messages.js';
 
 	// data.user comes from +layout.server.js, the rest from +page.server.js
 	let { data } = $props();
@@ -31,9 +32,6 @@
 	);
 	const weekMax = $derived(Math.max(user.kcal_target, ...data.week.map((d) => d.kcal)));
 
-	// First letter of the weekday for the weekly bars (S, M, T, ...)
-	const weekday = (date) => 'SMTWTFS'[new Date(date + 'T12:00:00').getDay()];
-
 	function mealKcal(meal) {
 		return round(sumEntries(data.entries.filter((e) => e.meal === meal)).kcal);
 	}
@@ -43,43 +41,43 @@
 	<header class="home-header">
 		<div>
 			<p>{longDate(data.date)}</p>
-			<h1>Hi, {user.username} <span>👋</span></h1>
+			<h1>{m.home_greeting({ name: user.username })} <span>👋</span></h1>
 		</div>
-		<a class="avatar" href="/app/profile" aria-label="Profile">{user.username[0]}</a>
+		<a class="avatar" href="/app/profile" aria-label={m.nav_profile()}>{user.username[0]}</a>
 	</header>
 
 	<div class="card calorie-card">
 		<div>
-			<span class="eyebrow">DAILY CALORIES</span>
+			<span class="eyebrow">{m.home_daily_calories()}</span>
 			<Ring value={totals.kcal} max={user.kcal_target} color="orange">
-				<strong>{remaining.toLocaleString('en-US')}</strong><small>remaining</small>
+				<strong>{num(remaining)}</strong><small>{m.common_remaining()}</small>
 			</Ring>
 		</div>
 		<div class="calorie-stats">
 			<div>
 				<span class="orange-dot"></span>
-				<p>Eaten<strong>{round(totals.kcal).toLocaleString('en-US')}</strong></p>
+				<p>{m.home_eaten()}<strong>{num(round(totals.kcal))}</strong></p>
 			</div>
 			<div>
 				<span class="target-dot"></span>
-				<p>Daily goal<strong>{user.kcal_target.toLocaleString('en-US')}</strong></p>
+				<p>{m.home_daily_goal()}<strong>{num(user.kcal_target)}</strong></p>
 			</div>
 		</div>
 	</div>
 
 	<div class="card">
 		<div class="card-title">
-			<h2>Today's macros</h2>
-			<a href="/app/diary">View diary <Icon name="next" size={16} /></a>
+			<h2>{m.home_todays_macros()}</h2>
+			<a href="/app/diary">{m.home_view_diary()} <Icon name="next" size={16} /></a>
 		</div>
-		<MacroRow label="Protein" color="blue" value={totals.protein} max={user.protein_target_g} />
-		<MacroRow label="Carbs" color="amber" value={totals.carbs} max={user.carbs_target_g} />
-		<MacroRow label="Fat" color="purple" value={totals.fat} max={user.fat_target_g} />
+		<MacroRow label={m.common_protein()} color="blue" value={totals.protein} max={user.protein_target_g} />
+		<MacroRow label={m.common_carbs()} color="amber" value={totals.carbs} max={user.carbs_target_g} />
+		<MacroRow label={m.common_fat()} color="purple" value={totals.fat} max={user.fat_target_g} />
 	</div>
 
 	<section>
 		<div class="section-title">
-			<h2>Meals</h2>
+			<h2>{m.home_meals()}</h2>
 			<span>{round(totals.kcal)} kcal</span>
 		</div>
 		<div class="meal-grid">
@@ -90,7 +88,7 @@
 					<a
 						class="icon-button"
 						href="/app/search?meal={meal.id}&from=home"
-						aria-label="Add {meal.label}"><Icon name="plus" /></a
+						aria-label={m.common_add_item({ item: meal.label })}><Icon name="plus" /></a
 					>
 				</div>
 			{/each}
@@ -100,8 +98,8 @@
 	<div class="card water-card">
 		<div class="water-icon"><Icon name="droplet" /></div>
 		<div>
-			<h2>Water</h2>
-			<p>{data.water} of 8 glasses</p>
+			<h2>{m.home_water()}</h2>
+			<p>{m.home_water_count({ count: data.water })}</p>
 			<div class="water-dots">
 				{#each Array(8) as _, i}<span class:filled={i < data.water}></span>{/each}
 			</div>
@@ -111,14 +109,14 @@
 				class="icon-button"
 				name="delta"
 				value="-1"
-				aria-label="Remove water"
+				aria-label={m.home_water_remove()}
 				disabled={savingWater || data.water === 0}><Icon name="minus" /></button
 			>
 			<button
 				class="icon-button"
 				name="delta"
 				value="1"
-				aria-label="Add water"
+				aria-label={m.home_water_add()}
 				disabled={savingWater || data.water === 8}><Icon name="plus" /></button
 			>
 		</form>
@@ -126,29 +124,29 @@
 
 	<div class="on-track" class:over>
 		{#if over}
-			You're {round(totals.kcal - user.kcal_target)} kcal over your goal today.
+			{m.home_over({ kcal: round(totals.kcal - user.kcal_target) })}
 		{:else if data.entries.length === 0}
-			Nothing logged yet. Add your first meal.
+			{m.home_nothing()}
 		{:else}
-			<Icon name="check" size={16} /> You're on track today. Keep it up!
+			<Icon name="check" size={16} /> {m.home_on_track()}
 		{/if}
 	</div>
 
 	<a class="card weekly" href="/app/statistics">
 		<div>
-			<span class="eyebrow">WEEKLY PROGRESS</span>
-			<h2>{onTrackDays} of 7 days on track</h2>
+			<span class="eyebrow">{m.home_weekly()}</span>
+			<h2>{m.home_days_on_track({ count: onTrackDays })}</h2>
 			<p>
 				{onTrackDays >= 4
-					? "You're building a great routine."
-					: 'Log your meals every day to see your progress.'}
+					? m.home_routine()
+					: m.home_log_every_day()}
 			</p>
 		</div>
 		<div class="mini-bars">
 			{#each data.week as day, i}
 				<div>
 					<span style="height: {(day.kcal / weekMax) * 75}%" class:today={i === 6}></span>
-					<small class:today={i === 6}>{weekday(day.date)}</small>
+					<small class:today={i === 6}>{weekdayLetter(day.date)}</small>
 				</div>
 			{/each}
 		</div>
@@ -157,17 +155,17 @@
 
 	{#if quickOpen}
 		<!-- Tapping anywhere outside the menu closes it -->
-		<button class="quick-backdrop" aria-label="Close menu" onclick={() => (quickOpen = false)}></button>
+		<button class="quick-backdrop" aria-label={m.home_close_menu()} onclick={() => (quickOpen = false)}></button>
 		<div class="quick-menu">
-			<a href="/app/search?from=home"><Icon name="search" />Add food</a>
-			<a href="/app/scan"><Icon name="barcode" />Scan barcode</a>
-			<a href="/app/scan?mode=photo"><Icon name="camera" />Take photo</a>
+			<a href="/app/search?from=home"><Icon name="search" />{m.common_add_food()}</a>
+			<a href="/app/scan"><Icon name="barcode" />{m.home_scan_barcode()}</a>
+			<a href="/app/scan?mode=photo"><Icon name="camera" />{m.home_take_photo()}</a>
 		</div>
 	{/if}
 	<button
 		class="fab"
 		class:open={quickOpen}
-		aria-label="Add"
+		aria-label={m.common_add()}
 		aria-expanded={quickOpen}
 		onclick={() => (quickOpen = !quickOpen)}
 	>
