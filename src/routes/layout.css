@@ -2617,6 +2617,104 @@ select {
   font-size: 12px;
 }
 
+/* Macros per day: stacked bars (protein bottom, carbs middle, fat top) */
+.stack-chart {
+  height: 160px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  border-bottom: 1px solid var(--line);
+  margin-top: 12px;
+}
+
+.stack-chart>button {
+  height: 150px;
+  width: 24px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  cursor: pointer;
+}
+
+.stack-chart>button:disabled {
+  cursor: default;
+}
+
+.stack-chart .stack {
+  width: 12px;
+  height: 130px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-radius: 7px 7px 3px 3px;
+  overflow: hidden;
+  opacity: 0.45;
+  transition: opacity 0.15s;
+}
+
+.stack-chart>button.selected .stack {
+  opacity: 1;
+}
+
+.stack-chart .protein {
+  background: #3b82f6;
+}
+
+.stack-chart .carbs {
+  background: #f59e0b;
+}
+
+.stack-chart .fat {
+  background: #a855f7;
+}
+
+.stack-chart small {
+  color: var(--muted);
+  margin-top: 5px;
+  font-size: 8px;
+  height: 11px;
+  line-height: 11px;
+}
+
+.stack-chart.month>button {
+  width: 9px;
+}
+
+.stack-chart.month .stack {
+  width: 6px;
+}
+
+.stack-detail {
+  margin-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  font-size: 13px;
+}
+
+.stack-detail strong {
+  width: 100%;
+}
+
+.stack-detail .protein {
+  color: #3b82f6;
+  font-weight: 700;
+}
+
+.stack-detail .carbs {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+.stack-detail .fat {
+  color: #a855f7;
+  font-weight: 700;
+}
+
 /* Profile */
 .profile-card {
   text-align: center;

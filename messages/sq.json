@@ -261,6 +261,8 @@
 	"stats_macro_avg": "SHPËRNDARJA E MAKROVE · MESATARJA NË DITË",
 	"stats_avg_per_day": "Mesatarisht në ditë",
 	"stats_days_logged": "Mesatarja e {count} ditëve me regjistrime (nga {total})",
+	"stats_macros_per_day": "MAKROT NË DITË",
+	"stats_tap_bar": "Prek një shtyllë për të parë atë ditë. Lartësia = kaloritë nga proteinat, karbohidratet dhe yndyra.",
 	"stats_goal_vs_actual": "Qëllimi kundrejt realitetit",
 	"stats_weight_history": "HISTORIKU I PESHËS",
 	"stats_since": "që nga {date}",

@@ -74,9 +74,9 @@ function toFood(product, code) {
 	const n = product.nutriments ?? {};
 	const name = text(
 		product.product_name ||
-			product.product_name_en ||
-			product.product_name_de ||
-			product.generic_name
+		product.product_name_en ||
+		product.product_name_de ||
+		product.generic_name
 	);
 
 	// Calories: kcal directly, or kJ converted (1 kcal = 4.184 kJ)

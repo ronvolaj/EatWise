@@ -261,6 +261,8 @@
 	"stats_macro_avg": "MAKROVERTEILUNG · Ø PRO TAG",
 	"stats_avg_per_day": "Ø pro Tag",
 	"stats_days_logged": "Durchschnitt der {count} Tage mit Einträgen (von {total})",
+	"stats_macros_per_day": "MAKROS PRO TAG",
+	"stats_tap_bar": "Tippe auf einen Balken, um den Tag zu sehen. Balkenhöhe = Kalorien aus Eiweiß, Kohlenhydraten und Fett.",
 	"stats_goal_vs_actual": "Ziel vs. Ist",
 	"stats_weight_history": "GEWICHTSVERLAUF",
 	"stats_since": "seit {date}",

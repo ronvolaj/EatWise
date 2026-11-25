@@ -85,6 +85,17 @@
 			: 'var(--soft)'
 	);
 
+	// ----- Macros per day: stacked bars (Week and Month) -----
+	// Bar height = calories from the macros (protein and carbs 4 kcal/g, fat 9 kcal/g)
+	const macroDayKcal = (d) => d.protein * 4 + d.carbs * 4 + d.fat * 9;
+	const stackMax = $derived(Math.max(1, ...shown.map(macroDayKcal)));
+	const stackPart = (day, key, kcalPerGram) => ((day[key] * kcalPerGram) / stackMax) * 100;
+	// The tapped day; without a tap (or after switching the range) the last day with entries
+	let selectedDate = $state(null);
+	const selected = $derived(
+		shown.find((d) => d.date === selectedDate && d.entries) ?? logged.at(-1)
+	);
+
 	// ----- Weight line chart (last 8 entries) -----
 	const weights = $derived(data.weights.slice(-8));
 	const points = $derived.by(() => {
@@ -151,6 +162,38 @@
 			</p>
 		{/if}
 	</div>
+	{#if range !== 'Day' && logged.length}
+		<div class="card">
+			<span class="eyebrow">{m.stats_macros_per_day()}</span>
+			<div class="stack-chart" class:month={range === 'Month'}>
+				{#each shown as day, i}
+					<button
+						type="button"
+						class:selected={selected?.date === day.date}
+						disabled={!day.entries}
+						aria-label="{shortDate(day.date)}: {round(day.kcal)} kcal"
+						onclick={() => (selectedDate = day.date)}
+					>
+						<span class="stack">
+							<span class="fat" style="height: {stackPart(day, 'fat', 9)}%"></span>
+							<span class="carbs" style="height: {stackPart(day, 'carbs', 4)}%"></span>
+							<span class="protein" style="height: {stackPart(day, 'protein', 4)}%"></span>
+						</span>
+						<small>{barLabel(day, i)}</small>
+					</button>
+				{/each}
+			</div>
+			{#if selected}
+				<p class="stack-detail">
+					<strong>{shortDate(selected.date)} · {num(round(selected.kcal))} kcal</strong>
+					<span class="protein">{m.common_protein()} {round(selected.protein)}g</span>
+					<span class="carbs">{m.common_carbs()} {round(selected.carbs)}g</span>
+					<span class="fat">{m.common_fat()} {round(selected.fat)}g</span>
+				</p>
+			{/if}
+			<p class="stats-note">{m.stats_tap_bar()}</p>
+		</div>
+	{/if}
 
 	<div class="card">
 		<span class="eyebrow">{range === 'Day' ? m.stats_macro_today() : m.stats_macro_avg()}</span>

@@ -261,6 +261,8 @@
 	"stats_macro_avg": "MACRO DISTRIBUTION · AVG PER DAY",
 	"stats_avg_per_day": "Avg per day",
 	"stats_days_logged": "Average of the {count} days with entries (out of {total})",
+	"stats_macros_per_day": "MACROS PER DAY",
+	"stats_tap_bar": "Tap a bar to see that day. Bar height = calories from protein, carbs and fat.",
 	"stats_goal_vs_actual": "Goal vs actual",
 	"stats_weight_history": "WEIGHT HISTORY",
 	"stats_since": "since {date}",
