@@ -95,6 +95,38 @@
 	const selected = $derived(
 		shown.find((d) => d.date === selectedDate && d.entries) ?? logged.at(-1)
 	);
+	// ----- Highlights -----
+	// Logging streak: days in a row with entries, counted back from today.
+	// If nothing is logged today yet, the streak still counts from yesterday (the day is not over).
+	const streak = $derived.by(() => {
+		let i = data.days.length - 1;
+		if (!data.days[i]?.entries) i--;
+		let count = 0;
+		while (i >= 0 && data.days[i].entries) {
+			count++;
+			i--;
+		}
+		return count;
+	});
+	const streakText = $derived(
+		streak === 0
+			? m.stats_streak_none()
+			: streak === 1
+				? m.stats_streak_one()
+				: m.stats_streak({ count: streak })
+	);
+	// Days within ±10 % of the calorie goal, and the day closest to the goal (Week/Month)
+	const isOnTarget = (d) => Math.abs(d.kcal - user.kcal_target) <= user.kcal_target * 0.1;
+	const onTargetDays = $derived(logged.filter(isOnTarget).length);
+	const bestDay = $derived(
+		logged.reduce(
+			(best, d) =>
+				!best || Math.abs(d.kcal - user.kcal_target) < Math.abs(best.kcal - user.kcal_target)
+					? d
+					: best,
+			null
+		)
+	);
 
 	// ----- Weight line chart (last 8 entries) -----
 	const weights = $derived(data.weights.slice(-8));
@@ -160,6 +192,34 @@
 				<a href="/app/search">{m.stats_log_first()}</a>
 				{m.stats_to_see()}
 			</p>
+		{/if}
+	</div>
+	<div class="card">
+		<span class="eyebrow">{m.stats_highlights()}</span>
+		<ul class="highlights">
+			<li>
+				<span class="highlight-icon">🔥</span>
+				<div><small>{m.stats_streak_label()}</small><strong>{streakText}</strong></div>
+			</li>
+			{#if range !== 'Day' && logged.length}
+				<li>
+					<span class="highlight-icon">🎯</span>
+					<div>
+						<small>{m.stats_on_target_label()}</small>
+						<strong>{m.stats_on_target_days({ count: onTargetDays, total: logged.length })}</strong>
+					</div>
+				</li>
+				<li>
+					<span class="highlight-icon">⭐</span>
+					<div>
+						<small>{m.stats_best_day_label()}</small>
+						<strong>{shortDate(bestDay.date)} · {num(round(bestDay.kcal))} kcal</strong>
+					</div>
+				</li>
+			{/if}
+		</ul>
+		{#if range !== 'Day' && logged.length < 3}
+			<p class="stats-note">{m.stats_more_days()}</p>
 		{/if}
 	</div>
 	{#if range !== 'Day' && logged.length}
